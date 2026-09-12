@@ -6,6 +6,7 @@ from publish_study import (
     measurement_summary,
     paired_outcomes,
     reviewed_content_hash,
+    secondary_asr_cost,
 )
 
 
@@ -22,6 +23,21 @@ def arm(provider, state, caller="pass"):
 
 
 class ReportTests(unittest.TestCase):
+    def test_supplemental_cost_uses_reported_duration(self):
+        row = {
+            "list_price_estimate_usd": 99,
+            "transcription": {"usage": {"type": "duration", "seconds": 120}},
+        }
+        self.assertAlmostEqual(secondary_asr_cost(row), 0.009)
+
+    def test_supplemental_transcript_change_invalidates_review(self):
+        target = {"transcript": [], "benchmark": {}}
+        caller = {"transcript": []}
+        self.assertNotEqual(
+            reviewed_content_hash(target, caller, [], [{"text": "yes"}]),
+            reviewed_content_hash(target, caller, [], [{"text": "no"}]),
+        )
+
     def test_zero_gap_is_valid_but_missing_gap_is_not_zero(self):
         self.assertEqual(
             distribution([0, None, 1000]),

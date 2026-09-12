@@ -33,6 +33,13 @@ def known_total(values):
     }
 
 
+def secondary_asr_cost(row):
+    usage = row.get("transcription", {}).get("usage", {})
+    if usage.get("type") == "duration" and isinstance(usage.get("seconds"), (int, float)):
+        return usage["seconds"] / 60 * 0.0045
+    return row["list_price_estimate_usd"]
+
+
 def distribution(values):
     known = [value for value in values if value is not None]
     return {
@@ -67,13 +74,15 @@ def measurement_summary(rows):
     }
 
 
-def reviewed_content_hash(target, caller, asr):
+def reviewed_content_hash(target, caller, asr, secondary=None):
     content = {
         "target_transcript": target["transcript"],
         "caller_transcript": caller["transcript"],
         "benchmark": target["benchmark"],
         "asr": asr,
     }
+    if secondary is not None:
+        content["secondary_asr"] = secondary
     return hashlib.sha256(
         json.dumps(content, sort_keys=True, ensure_ascii=False).encode()
     ).hexdigest()
@@ -90,6 +99,9 @@ def measurement_tables(groups):
         "These are component estimates and posted carrier charges, not a complete invoice. "
         "Target and simulator costs are separate. Unknown modality and unbilled services are "
         "not zero. The approved EUR budget is a spending limit, not an exchange-rate conversion.",
+        "ASR includes original Whisper plus supplemental gpt-transcribe. Supplemental estimates "
+        "use reported API duration when available; raw envelopes retain the original "
+        "input-duration estimate.",
         "",
         "| Language | Target | Calls | Target model | Caller model | Carrier + recording | ASR |",
         "|---|---|---:|---:|---:|---:|---:|",
@@ -306,6 +318,8 @@ def export(manifest, root, output, draft=False):
         target = cards["agent"].get("lane_extra", {})
         caller = cards["caller"].get("lane_extra", {})
         transcript = read(folder / "analysis/transcript-summary.json", {})
+        secondary = [read(folder / f"analysis/asr-secondary-{i}.json") for i in (0, 1)]
+        secondary_complete = all(secondary)
         review = read(folder / "assessment.json", {})
         audit = read(folder / "analysis/offline-audit.json", {})
         wavs = list(folder.glob("*.wav"))
@@ -317,6 +331,7 @@ def export(manifest, root, output, draft=False):
             and review
             and audit
             and len(wavs) == 1
+            and secondary_complete
         )
         if not draft and not complete:
             raise ValueError(
@@ -336,7 +351,9 @@ def export(manifest, root, output, draft=False):
             if audit.get("source_sha256") != expected_sources:
                 raise ValueError(f"{trial['trial_id']}: audit source changed; rerun offline audit")
             asr = [read(folder / f"analysis/asr-channel-{i}.json")["transcription"] for i in (0, 1)]
-            if review.get("reviewed_content_sha256") != reviewed_content_hash(target, caller, asr):
+            if review.get("reviewed_content_sha256") != reviewed_content_hash(
+                target, caller, asr, [r["transcription"] for r in secondary]
+            ):
                 raise ValueError(f"{trial['trial_id']}: review source changed; inspect again")
         if audit and not audit["sandbox_replay"]["exact_state_results_and_grade_match"]:
             raise ValueError("Resolve failed replay audit before export")
@@ -397,6 +414,7 @@ def export(manifest, root, output, draft=False):
             for role, extra in (("target", target), ("caller", caller))
         }
         row["independent_asr"] = transcript
+        row["supplemental_asr"] = [r for r in secondary if r]
         row["sandbox"] = target.get("benchmark", {}).get("sandbox")
         row["tool_executions"] = target.get("benchmark", {}).get("tool_executions", [])
         row["caller_agenda"] = caller.get("benchmark", {}).get("caller_prompt")
@@ -408,7 +426,18 @@ def export(manifest, root, output, draft=False):
             "caller": estimate_usage(caller.get("session_usage", {})),
             "carrier_known_usd": carrier.get("known_carrier_cost_usd"),
             "carrier_pending_prices": carrier.get("pending_carrier_prices"),
-            "asr_list_price_estimate_usd": transcript.get("asr_list_price_estimate_usd"),
+            "primary_asr_list_price_estimate_usd": transcript.get("asr_list_price_estimate_usd"),
+            "secondary_asr_list_price_estimate_usd": sum(
+                secondary_asr_cost(r) for r in secondary if r
+            )
+            if secondary_complete
+            else None,
+            "asr_list_price_estimate_usd": (
+                transcript["asr_list_price_estimate_usd"]
+                + sum(secondary_asr_cost(r) for r in secondary if r)
+                if transcript.get("asr_list_price_estimate_usd") is not None
+                else None
+            ),
             "unreconciled_components": carrier.get("unreconciled_costs", []),
             "invoice_total_usd": None,
         }
@@ -423,6 +452,20 @@ def export(manifest, root, output, draft=False):
         if draft
         else "completed_exploratory_evidence_with_listening_pending",
         "evaluation_software": "https://github.com/patrick25076/grai-voice-bench/tree/v0.4.0",
+        "analysis_software": "https://github.com/patrick25076/grai-voice-bench/tree/study60-v1",
+        "analysis_source_sha256": {
+            name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+            for name in (
+                "publish_study.py",
+                "grade_errata.py",
+                "offline_analysis.py",
+                "usage_audit.py",
+                "secondary_asr.py",
+                "audio_diagnostics.py",
+                "report.py",
+                "costs.py",
+            )
+        },
         "exact_frozen_source_archive": (
             "https://github.com/patrick25076/grai-voice-bench/releases/download/"
             "v0.4.0/frozen-source-v0.4.0.zip"
@@ -441,6 +484,7 @@ def export(manifest, root, output, draft=False):
         "frozen_manifest_canonical_sha256": read(manifest.with_suffix(".sha256.json"))["sha256"],
         "scheduled": plan["total_calls"],
         "recordings": sum(bool(r["audio"]) for r in rows),
+        "secondary_transcribed_calls": sum(len(r["supplemental_asr"]) == 2 for r in rows),
         "groups": groups,
         "caller_strata": stratified_summary(rows, ("language", "caller_provider")),
         "case_strata": stratified_summary(rows, ("language", "scenario")),
@@ -463,6 +507,10 @@ def export(manifest, root, output, draft=False):
             "assessment, human audio verification and Patrick's personal preference.",
             "Whisper and provider transcripts can hallucinate, omit speech or disagree. Original "
             "dual-channel audio is retained at unchanged level and speed.",
+            "After major Whisper omissions/repetition were observed, all 60 recordings received "
+            "a supplemental gpt-transcribe pass on both channels without an expected-text prompt. "
+            "This post-start analysis addition preserves the original ASR and grades. Agreement "
+            "between transcribers is supporting machine evidence, not human audio verification.",
             "RMS gaps are exploratory acoustic diagnostics, not validated response latency. "
             "Receipt timestamps are not audible boundaries. Duration is not speaking speed.",
             "Known USD cost components are dated estimates/posted carrier charges. Missing token "

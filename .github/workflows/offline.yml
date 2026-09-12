@@ -20,6 +20,7 @@ jobs:
       - run: uv run python test_publish_study.py
       - run: uv run python test_audio_diagnostics.py
       - run: uv run python test_grade_errata.py
+      - run: uv run python test_secondary_asr.py
       - run: uv run python -m compileall -q provider_audit.py study.py review.py results.py transcribe.py postprocess.py
       - run: uv run python -m compileall -q worker.py phone.py report.py collect.py reconcile.py costs.py voicelab
       - run: uv run python -m compileall -q usage_audit.py offline_analysis.py publish_study.py

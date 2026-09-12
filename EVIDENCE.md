@@ -81,3 +81,28 @@ Git checkouts can normalize line endings. The archive preserves the original
 bytes and all 17 frozen runtime/runner hashes. It was packaged during evaluation
 without changing those files; its historical README describes the pre-study
 state. Later assessment tools and reports are separate from the frozen runtime.
+
+## Supplemental transcription for all 60 calls
+
+After primary Whisper ASR omitted much of a Romanian call and repeated unrelated
+text, the review added `gpt-transcribe` for both channels of every study recording.
+This was a post-start analysis change, applied to all target arms rather than only
+selected outcomes. Original Whisper results and raw recordings are retained.
+
+```sh
+uv run python secondary_asr.py --manifest runs/manifest-frozen.json \
+  --runs runs/study60 --env .env
+```
+
+It reuses the exact primary per-channel audio files without gain or speed changes,
+provides no expected transcript or order facts, stores source/input hashes, and
+uses exclusive request markers to prevent accidental paid retries. Supplemental
+ASR remains machine evidence, not a human listening judgment. Assessments must
+explicitly include the new evidence before their content hashes are refreshed.
+The completed study export requires both supplemental channels for every call.
+
+The report retains input-duration estimates in raw ASR envelopes and uses the
+supplemental API's reported duration when available for its cost estimate.
+The dated list price is $0.0045 per minute, checked 2026-09-13 in the
+[official pricing documentation](https://developers.openai.com/api/docs/pricing).
+ASR totals include both passes. These estimates are not final invoices.
