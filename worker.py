@@ -31,6 +31,7 @@ import hmac
 import json
 import logging
 import os
+import re
 import socket
 import time
 from collections.abc import AsyncIterable, AsyncIterator
@@ -741,9 +742,48 @@ async def entrypoint(ctx: JobContext) -> None:
         instruction = prompts[1] if is_gptlive else prompts[0]
     if is_caller and benchmark:
         instruction = benchmark.call.caller_prompt
-    agent = BareAgent(instruction, benchmark.tools() if benchmark and not is_caller else [])
+    exposed_tools = benchmark.tools() if benchmark and not is_caller else []
+    if benchmark and is_caller:
+        from benchmark_support import FINISH_CALL_SCHEMA
+        from livekit import api
+        from livekit.agents import function_tool
+
+        def schedule_hangup(reason, trigger):
+            if extra.get("caller_finish_request"):
+                return
+            extra["caller_finish_request"] = {
+                "reason": reason,
+                "trigger": trigger,
+                "requested_at_unix": time.time(),
+                "is_success_proof": False,
+            }
+
+            async def hangup():
+                # Give the caller's short farewell a playout grace period, then
+                # terminate only this authenticated benchmark caller's room.
+                await asyncio.sleep(5)
+                async with api.LiveKitAPI() as client:
+                    await client.room.delete_room(api.DeleteRoomRequest(room=ctx.room.name))
+
+            task = asyncio.create_task(hangup())
+            task.add_done_callback(
+                lambda t: (
+                    logger.error("caller hangup failed: %s", t.exception())
+                    if not t.cancelled() and t.exception()
+                    else None
+                )
+            )
+
+        async def finish_call(raw_arguments: dict):
+            schedule_hangup(raw_arguments.get("reason"), "caller_tool")
+            return {"ok": True, "status": "hangup_scheduled"}
+
+        exposed_tools = [function_tool(finish_call, raw_schema=FINISH_CALL_SCHEMA)]
+    agent = BareAgent(instruction, exposed_tools)
     extra["tool_declarations"] = (
-        [tool.declaration() for tool in benchmark.registry] if benchmark and not is_caller else []
+        [tool.declaration() for tool in benchmark.registry]
+        if benchmark and not is_caller
+        else ([FINISH_CALL_SCHEMA] if benchmark and is_caller else [])
     )
     extra["state_events"] = []
     extra["instruction_sha256"] = hashlib.sha256(instruction.encode()).hexdigest()
@@ -827,6 +867,12 @@ async def entrypoint(ctx: JobContext) -> None:
             extra["transcript"].append(
                 {"role": role, "text": text, "received_at_unix": time.time()}
             )
+            if benchmark and is_caller and role == "assistant":
+                recent = " ".join(
+                    item["text"] for item in extra["transcript"][-4:] if item["role"] == "assistant"
+                )
+                if re.search(r"\b(goodbye|la revedere)\b", recent, re.IGNORECASE):
+                    schedule_hangup("Caller said a terminal farewell", "caller_spoken_farewell")
 
     @session.on("error")
     def _error(ev: Any) -> None:

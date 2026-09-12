@@ -118,8 +118,27 @@ def check_evidence(run_dir, profiles=None):
             "cancel_order",
             "take_message",
         }
-        if names != (wanted if role == "agent" else set()):
+        if names != (wanted if role == "agent" else {"finish_call"}):
             raise ValueError("Incorrect tool exposure")
+        native_names = set()
+        for event in configs:
+            native = event["data"]
+            if expected == "gptlive":
+                declarations = (
+                    native.get("session", {})
+                    .get("delegation", {})
+                    .get("responses", {})
+                    .get("tools", [])
+                )
+            else:
+                declarations = [
+                    tool
+                    for group in native.get("tools", [])
+                    for tool in group.get("function_declarations", [])
+                ]
+            native_names.update(t["name"] for t in declarations)
+        if native_names != names:
+            raise ValueError("Native provider configuration does not expose the expected tools")
         roles.append((role, extra["provider"]))
     return roles
 
@@ -178,6 +197,7 @@ def freeze(args):
 async def execute(args):
     from collect import main as collect
     from phone import run, session_lock
+    from reconcile import main as reconcile
     from review import build
 
     plan, config = read(args.manifest), read(args.config)
@@ -256,17 +276,28 @@ async def execute(args):
                 raise ValueError("Unsupported worker host/path")
             cards = args.runs / "worker-scorecards"
             cards.mkdir(exist_ok=True)
-            subprocess.run(
-                [
-                    "scp",
-                    "-q",
-                    f"{config['worker_host']}:{config['worker_dir']}/scorecards/*.json",
-                    str(cards),
-                ],
-                check=True,
-            )
+            for settle_attempt in range(8):
+                subprocess.run(
+                    [
+                        "scp",
+                        "-q",
+                        f"{config['worker_host']}:{config['worker_dir']}/scorecards/*.json",
+                        str(cards),
+                    ],
+                    check=True,
+                )
+                collect(args.runs)
+                try:
+                    check_evidence(output, plan["observed_profiles"])
+                    break
+                except FileNotFoundError:
+                    if settle_attempt == 7:
+                        raise
+                    # Provider shutdown can finish after the carrier hangup.
+                    # Wait for the same call's artifacts; never redial it.
+                    await asyncio.sleep(5)
+            reconcile(args.runs, Path(config["carrier_env"]), only_run=output)
             collect(args.runs)
-            check_evidence(output, plan["observed_profiles"])
             from review import write
 
             attempt = read(stamp)

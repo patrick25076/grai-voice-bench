@@ -109,7 +109,9 @@ async def _run_locked(args):
         "calls": [],
         "recordings": [],
         "status": "starting",
+        "started_at_unix": time.time(),
     }
+    (args.output / "run.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     async with (
         api.LiveKitAPI() as lk,
         httpx.AsyncClient(
@@ -163,6 +165,7 @@ async def _run_locked(args):
             response.raise_for_status()
             call_id = response.json()["sid"]
             result["call_id"] = call_id
+            (args.output / "run.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
             print(json.dumps({"call_id": call_id, "status": "started"}), flush=True)
             deadline = time.monotonic() + args.seconds + 55
             while time.monotonic() < deadline:

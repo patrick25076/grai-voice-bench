@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, patch
 from livekit.agents import llm
 from livekit.plugins.google.utils import create_tools_config
 from livekit.plugins.openai.realtime.gpt_live_model import _build_delegation_tools
+from voicelab.simulations.cases import CASES, SimulationCase
 from voicelab.simulations.study60 import make_plan
 
 from benchmark_support import BenchmarkContext
@@ -39,6 +40,16 @@ def normalized(schema):
 
 
 class StudyChecks(unittest.TestCase):
+    def test_caller_only_receives_the_assigned_second_address(self):
+        for name in CASES:
+            for language in ("en", "ro"):
+                case = SimulationCase(name, language=language)
+                self.assertEqual(
+                    case.second_address in case.call.caller_prompt, name == "sim-change-address"
+                )
+                if name in {"sim-amend-quantity", "sim-change-address", "sim-cancel-order"}:
+                    self.assertIn("no order exists yet", case.call.caller_prompt)
+
     def test_invalid_caller_cannot_establish_target_quality(self):
         self.assertIsNone(complete_task_result(False, True, ["fail", "pass", "pass"]))
         self.assertIsNone(complete_task_result(True, True, ["unreviewed"] * 3))

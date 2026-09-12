@@ -15,4 +15,5 @@ jobs:
       - run: uv run python test_runner.py
       - run: uv run python test_simulations.py
       - run: uv run python test_study.py
+      - run: uv run python -m compileall -q provider_audit.py study.py review.py results.py transcribe.py postprocess.py
       - run: uv run python -m compileall -q worker.py phone.py report.py collect.py reconcile.py costs.py voicelab

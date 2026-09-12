@@ -27,6 +27,16 @@ PERSONAS = {
     "hesitant": "Pause and ask for clarification if confused. Correct mistaken readbacks. Keep the stated facts stable.",
     "hurried": "You are short on time. Ask for a brief answer, but still answer necessary questions and confirm only correct details.",
 }
+CALLER_STEPS = {
+    "sim-create-order": "Start by requesting a NEW order for 200 kg. No order exists yet. Confirm an accurate readback, then wait until the agent says it is saved. This completes your goal.",
+    "sim-amend-quantity": "First request a NEW order for 200 kg; no order exists yet. Confirm its accurate readback and wait until the agent explicitly says it is saved. ONLY THEN ask to change that SAME order to 250 kg. Keep the same delivery address, date and time. Confirm an accurate amendment readback and wait for the update. Do not request a second order or a second address.",
+    "sim-change-address": "First request a NEW order for 200 kg; no order exists yet. Confirm its accurate readback and wait until the agent explicitly says it is saved. ONLY THEN ask to REPLACE its delivery address with your second site. Keep quantity, date and time unchanged. There must be just ONE order and ONE delivery address. Confirm the amendment and wait for the update.",
+    "sim-cancel-order": "First request a NEW order for 200 kg; no order exists yet. Confirm its accurate readback and wait until the agent explicitly says it is saved. ONLY THEN ask to cancel that SAME order. Confirm cancellation if asked and wait for the outcome. Do not place another order.",
+    "sim-existing-order": "You already placed a 200 kg order yesterday. Ask to change that EXISTING order to 250 kg. Do not request or agree to a new order. If changes need a human, agree to leave a follow-up request for the 250 kg amendment. Keep all other details unchanged.",
+    "sim-stock-shortage": "Ask to place a NEW order for at least 200 kg. No order exists yet. If that quantity is unavailable, reject smaller quantities and request a human follow-up. Do not change your requirements or invent another request.",
+    "sim-retry-after-timeout": "Request a NEW order for 200 kg; no order exists yet. Confirm an accurate readback. If the save is uncertain, ask the agent to check whether that order was saved and recover it; do not ask them to place another order. Wait for a clear outcome.",
+    "sim-no-consent": "Ask for the price and stock of 200 kg only. Explicitly say this is an inquiry and you are NOT placing an order. If asked to place or confirm an order, decline. Do not consent to a booking or follow-up request. Once you have price and availability, your inquiry is complete.",
+}
 PROCEDURE = """Help callers order dry ice or discuss existing orders.
 Use get_price and check_stock for current facts. Collect every required order
 field. Product 'dry ice' is the tool value for gheață carbonică as well.
@@ -70,11 +80,19 @@ class SimulationCase:
             "Listen to the agent's greeting before asking for help. "
             f"Your personal order details are {facts}. Your surname is spelled S-M-Y-T-H-E. "
             "Supply these facts when needed; correct any mistaken readback. "
-            f"Your agenda: {CASES[name]} Your second site is {self.second_address}. "
-            f"{PERSONAS[self.persona]} "
+            f"Follow these steps in order: {CALLER_STEPS[name]} "
+            + (
+                f"Your replacement delivery address is {self.second_address}. "
+                if name == "sim-change-address"
+                else ""
+            )
+            + f"{PERSONAS[self.persona]} "
             "For a new order, confirm an accurate readback before proceeding to any later agenda step. "
             "When an agenda step depends on the agent saying an action was completed, wait until you hear that claim. "
             "Do not invent extra requests or abandon your goal to please the agent. "
+            "Do not add conversational filler while the agent is checking or saving; wait for their result. "
+            "After the complete agenda is resolved, say goodbye once, then use finish_call to hang up. "
+            "Do not hang up before all assigned steps are resolved. A follow-up request resolves only an agenda that explicitly allows one. "
             "The reference date is Monday, 14 September 2026."
         )
         self.call = replace(base, caller_prompt=caller)
@@ -157,8 +175,26 @@ class SimulationCase:
                     for k, v in self.initial_order.items()
                 )
             if self.name == "sim-retry-after-timeout":
-                checks["uncertain_result_recovered"] = any(
-                    e["result"].get("replayed") for e in events
+                uncertain = next(
+                    (e for e in events if e["result"].get("code") == "outcome_unknown"), None
+                )
+                checks["uncertain_result_recovered"] = bool(uncertain) and any(
+                    e["sequence"] > uncertain["sequence"]
+                    and (
+                        e["result"].get("replayed")
+                        or (
+                            e["tool"] == "lookup_order"
+                            and any(
+                                order.get("created_this_call")
+                                and all(
+                                    self._same(k, order.get(k), v)
+                                    for k, v in self.initial_order.items()
+                                )
+                                for order in e["result"].get("orders", [])
+                            )
+                        )
+                    )
+                    for e in events
                 )
         policy_errors = [
             e["result"].get("code")

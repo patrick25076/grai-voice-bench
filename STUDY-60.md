@@ -22,6 +22,28 @@ first-target order is randomized and balanced overall. English and Romanian
 results must remain separate, as must caller-provider strata. This is a small
 exploratory study; Romanian has particularly little replication.
 
+The simulated caller has one telephone-control tool, `finish_call`, and no
+business tools. It may hang up after completing its entire agenda and saying
+goodbye, with a five-second farewell grace period. The common harness also
+recognizes `goodbye` / `la revedere` in the caller's own output transcript and
+starts that same grace period, because a GPT-Live development caller completed
+its agenda but did not invoke the telephone-control tool. Otherwise the 180-second
+limit applies. A hangup request is not proof of success; early or incorrect
+hangups count as caller-fidelity issues and remain visible. This avoids charging
+all completed conversations for an artificial silent three-minute tail.
+
+Calibration on September 13 exposed an ambiguous caller prompt: it assumed an
+existing order and introduced an unassigned second address. Suite v2 now states
+the initial situation and ordered steps explicitly, supplies the second address
+only to the address-change case, and discourages filler during tool work. The
+affected calibration call is excluded from model conclusions and retained as
+development evidence. The target prompts were unchanged by this correction.
+
+Before the recovery calibrations, the grader was also corrected to accept either
+a successful same-key retry or a post-failure lookup that verifies the saved
+order's exact requested fields. An earlier lookup does not count as recovery,
+and duplicates still fail. This avoids penalizing a valid verification strategy.
+
 The targets are `gemini-3.1-flash-live-preview` / Puck and `gpt-live-1` / marin
 with `gpt-5.6-terra` as its reasoning backend. These compare configured systems,
 including provider-native turn handling, not isolated equal-compute base models.
@@ -34,6 +56,22 @@ natural conversational pace. The old pilot's GPT target channel had an active
 300 in PCM16). That is an audio-level diagnostic, not LUFS, speaking speed or a
 whisper classifier. This prompt change still requires live calibration. Raw
 recordings stay at original level and speed; do not normalize one arm secretly.
+
+Independent per-channel `whisper-1` transcripts can be generated with
+`transcribe.py`. They retain word/segment timestamp estimates, recording hashes
+and their separate list-price estimate ($0.006/minute, checked September 13).
+Transcription errors and timing uncertainty still require review. No fixture
+answers or expected spellings are given to the transcriber. Source:
+[OpenAI transcription timestamps](https://developers.openai.com/api/docs/guides/speech-to-text#timestamps),
+[pricing](https://developers.openai.com/api/docs/pricing).
+
+Calibration also exposed spurious Whisper text during silent call tails and
+occasional name/word errors. Keep raw ASR, but check it against provider output
+transcripts and audio before attributing a statement to either speaker. A
+transcriber hallucination is not a target or caller failure.
+For evaluation ASR only, trailing silence is trimmed with the same 20 ms RMS
+threshold (100 PCM16 units) and 0.5-second padding on each channel. The original
+recording and time zero remain unchanged; no gain or speed changes are applied.
 
 ## Fair tool exposure and evidence
 
@@ -151,3 +189,8 @@ pass/fail/unknown counts by language and caller stratum, known model-cost
 components and first label-hidden personal ratings. It rejects overwriting an
 existing report file. Validated latency and invoice totals remain null; it does
 not invent a finished report from incomplete evidence.
+
+`postprocess.py --manifest runs/manifest-frozen.json --runs runs/study60 --env
+.env` can transcribe completed calls while the serial runner continues. It makes
+paid transcription requests, retains raw output and writes level diagnostics;
+it does not place calls or assign personal ratings.

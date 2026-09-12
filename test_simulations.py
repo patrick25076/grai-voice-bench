@@ -61,6 +61,15 @@ class SandboxTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(sum(o["created_this_call"] for o in sandbox.orders.values()), 1)
         self.assertEqual(sandbox.events[-1]["before"], sandbox.events[-1]["after"])
 
+    async def test_unknown_commit_can_be_verified_by_lookup(self):
+        case = SimulationCase("sim-retry-after-timeout")
+        args = {**case.initial_order, "confirmed": True, "idempotency_key": "one"}
+        await case.sandbox.execute("lookup_order", {})
+        await case.sandbox.execute("record_order", args)
+        self.assertFalse(case.grade()["checks"]["uncertain_result_recovered"])
+        await case.sandbox.execute("lookup_order", {})
+        self.assertTrue(case.grade()["state_pass"])
+
     async def test_new_key_after_unknown_commit_is_detected_as_duplicate(self):
         case = SimulationCase("sim-retry-after-timeout")
         args = {**order_fields(), "confirmed": True, "idempotency_key": "one"}

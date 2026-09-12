@@ -17,6 +17,29 @@ def main(root):
         run = json.loads(path.read_text(encoding="utf-8"))
         run_id = run["setup"]["run_id"]
         related = [card for card in cards if card["lane_extra"].get("run_id") == run_id]
+        callers = [
+            card
+            for card in related
+            if card["lane_extra"].get("role") == "caller"
+            and card["lane_extra"].get("sip", {}).get("sip.twilio.callSid") == run.get("call_id")
+        ]
+        expected_phone = (
+            callers[0]["lane_extra"].get("sip", {}).get("sip.phoneNumber")
+            if len(callers) == 1
+            else None
+        )
+        targets = [
+            card
+            for card in related
+            if card["lane_extra"].get("role") == "agent"
+            and expected_phone
+            and card["lane_extra"].get("sip", {}).get("sip.phoneNumber") == expected_phone
+        ]
+        if len(callers) > 1 or len(targets) > 1:
+            raise ValueError(
+                f"Ambiguous worker evidence for {run_id}; do not choose a scorecard silently"
+            )
+        related = callers + targets
         evidence = {
             "run_id": run_id,
             "provider": run["setup"]["provider"],
@@ -48,8 +71,14 @@ def main(root):
         ]
         evidence["known_carrier_cost_usd"] = sum(priced) if priced else None
         evidence["pending_carrier_prices"] = sum(row.get("price") is None for row in reported)
-        evidence["unreconciled_costs"] = [
-            "inbound Elastic SIP trunk leg",
+        evidence["unreconciled_costs"] = (
+            []
+            if any(
+                row.get("component") == "inbound_target_trunk" and row.get("price") is not None
+                for row in run["calls"]
+            )
+            else ["inbound Elastic SIP trunk leg"]
+        ) + [
             "LiveKit SIP and media",
             "allocated VM hosting",
             "provider invoice and any usage not present in final SDK snapshot",

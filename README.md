@@ -22,6 +22,12 @@ recover an uncertain save, and avoid ordering without consent. Tools execute in
 fresh in-memory business environments with before/after evidence. These additions
 are tested offline; new model comparisons have not been run yet.
 
+September 13 calibration found and corrected a caller-agenda ambiguity and a
+recovery-grader restriction before evaluation. It also verified native tool
+exposure, a common call-ending rule, and incoming-trunk cost collection. The
+development recordings remain separate from the 60-call study. See
+[the protocol](STUDY-60.md) for exact controls and known transcription limitations.
+
 ```sh
 uv sync --locked
 uv run python -m voicelab.simulations demo --output runs/simulation-demo

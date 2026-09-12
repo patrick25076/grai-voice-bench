@@ -4,8 +4,8 @@ title: "GRAI Voice Bench: phone simulations and sandbox evaluation for voice age
 type: software
 authors:
   - name: "GRAI Labs contributors"
-version: 0.3.0
-date-released: 2026-09-12
+version: 0.4.0
+date-released: 2026-09-13
 url: "https://github.com/patrick25076/grai-voice-bench"
 repository-code: "https://github.com/patrick25076/grai-voice-bench"
 license: MIT

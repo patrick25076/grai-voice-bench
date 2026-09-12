@@ -16,6 +16,16 @@ from voicelab.bench.agent import (
 from voicelab.bench.suite import grade_state, scenario
 from voicelab.bench.tools import BENCH_TODAY, build_backend
 
+FINISH_CALL_SCHEMA = {
+    "name": "finish_call",
+    "description": "End your telephone call after completing your entire customer agenda and saying goodbye. This is a telephone control, not a business tool or proof of success.",
+    "parameters": {
+        "type": "object",
+        "properties": {"reason": {"type": "string"}},
+        "required": ["reason"],
+    },
+}
+
 
 def usage_snapshot(usage) -> dict:
     """AgentSessionUsage is a dataclass containing Pydantic model-usage rows."""
