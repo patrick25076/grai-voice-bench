@@ -1,6 +1,12 @@
 import unittest
 
-from publish_study import known_total, paired_outcomes, reviewed_content_hash
+from publish_study import (
+    distribution,
+    known_total,
+    measurement_summary,
+    paired_outcomes,
+    reviewed_content_hash,
+)
 
 
 def arm(provider, state, caller="pass"):
@@ -16,6 +22,34 @@ def arm(provider, state, caller="pass"):
 
 
 class ReportTests(unittest.TestCase):
+    def test_zero_gap_is_valid_but_missing_gap_is_not_zero(self):
+        self.assertEqual(
+            distribution([0, None, 1000]),
+            {"n": 2, "total_n": 3, "median": 500, "min": 0, "max": 1000},
+        )
+
+    def test_calls_have_equal_weight_and_target_channel_is_explicit(self):
+        rows = [
+            {
+                "audio_diagnostics": {
+                    "acoustic_diagnostics": {
+                        "median_audio_proxy_gap_ms": gap,
+                        "audio_proxy_gap_ms": raw,
+                    },
+                    "audio_levels": {
+                        "channels": [
+                            {"channel": 0, "active_frame_median_dbfs": -10},
+                            {"channel": 1, "active_frame_median_dbfs": -25},
+                        ]
+                    },
+                }
+            }
+            for gap, raw in [(100, [100] * 30), (900, [900])]
+        ]
+        result = measurement_summary(rows)
+        self.assertEqual(result["call_median_energy_gap_ms"]["median"], 500)
+        self.assertEqual(result["target_active_frame_median_dbfs"]["median"], -25)
+
     def test_missing_cost_is_not_a_zero_cost_observation(self):
         self.assertEqual(
             known_total([None, 0.2]), {"known_sum_usd": 0.2, "known_n": 1, "total_n": 2}

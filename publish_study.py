@@ -33,6 +33,40 @@ def known_total(values):
     }
 
 
+def distribution(values):
+    known = [value for value in values if value is not None]
+    return {
+        "n": len(known),
+        "total_n": len(values),
+        "median": statistics.median(known) if known else None,
+        "min": min(known) if known else None,
+        "max": max(known) if known else None,
+    }
+
+
+def measurement_summary(rows):
+    def acoustic(row):
+        return row.get("audio_diagnostics", {}).get("acoustic_diagnostics", {})
+
+    def target_level(row):
+        channels = row.get("audio_diagnostics", {}).get("audio_levels", {}).get("channels", [])
+        return next(
+            (c.get("active_frame_median_dbfs") for c in channels if c["channel"] == 1), None
+        )
+
+    return {
+        "call_median_energy_gap_ms": distribution(
+            [acoustic(row).get("median_audio_proxy_gap_ms") for row in rows]
+        ),
+        "target_active_frame_median_dbfs": distribution([target_level(row) for row in rows]),
+        "overlap_ms": distribution([acoustic(row).get("overlap_ms") for row in rows]),
+        "measurement_unit": "one statistic per call; calls have equal weight",
+        "scope": (
+            "Exploratory PCM energy measurements, not validated turn latency, LUFS or speech speed."
+        ),
+    }
+
+
 def reviewed_content_hash(target, caller, asr):
     content = {
         "target_transcript": target["transcript"],
@@ -43,6 +77,93 @@ def reviewed_content_hash(target, caller, asr):
     return hashlib.sha256(
         json.dumps(content, sort_keys=True, ensure_ascii=False).encode()
     ).hexdigest()
+
+
+def measurement_tables(groups):
+    def number(value, digits=2):
+        return "unknown" if value is None else f"{value:.{digits}f}"
+
+    lines = [
+        "",
+        "## Known cost components (USD)",
+        "",
+        "These are component estimates and posted carrier charges, not a complete invoice. "
+        "Target and simulator costs are separate. Unknown modality and unbilled services are "
+        "not zero. The approved EUR budget is a spending limit, not an exchange-rate conversion.",
+        "",
+        "| Language | Target | Calls | Target model | Caller model | Carrier + recording | ASR |",
+        "|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for g in groups:
+        cells = [g["language"], g["provider"], str(g["recordings"])]
+        for k in ("target", "caller", "carrier", "asr"):
+            part = g[k + "_known_components"] if k != "target" else g["target_known_components"]
+            cells.append(
+                number(part["known_sum_usd"], 4) + f" ({part['known_n']}/{part['total_n']})"
+            )
+        lines.append("| " + " | ".join(cells) + " |")
+    lines += [
+        "",
+        "## Exploratory audio measurements",
+        "",
+        "Each call has equal weight: the gap column is the median of per-call median energy "
+        "gaps, not a pooled turn statistic. PCM16 RMS threshold 300, 20 ms frames and a 400 ms "
+        "segment merge were used. Overlapping responses are excluded from gaps; acknowledgments "
+        "can count as responses. These are not validated semantic response times. Active-frame "
+        "dBFS is not LUFS or a measure of whispering/speaking speed. Silent hangup tails remain "
+        "in recording duration and costs. Original recordings are unchanged.",
+        "",
+        "| Language | Target | Gap observations | Median call gap (ms) | Median target active dBFS "
+        "| Median recording duration (s) |",
+        "|---|---|---:|---:|---:|---:|",
+    ]
+    for g in groups:
+        m = g["audio_measurements"]
+        gap = m["call_median_energy_gap_ms"]
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    g["language"],
+                    g["provider"],
+                    f"{gap['n']}/{gap['total_n']}",
+                    number(gap["median"], 0),
+                    number(m["target_active_frame_median_dbfs"]["median"]),
+                    number(g["recording_duration_median_s"]),
+                ]
+            )
+            + " |"
+        )
+    lines += [
+        "",
+        "## Transcript-assisted checks",
+        "",
+        "These provisional checks compare native text, independent ASR and sandbox evidence. "
+        "They are assistant assessments, not Patrick's scores or verified human listening. "
+        "Disputed audible details remain unclear. Readback/consent can fail even when a model "
+        "sets confirmed=true and the sandbox accepts its write.",
+        "",
+        "| Language | Target | Gate | Pass | Fail | Unclear | Not applicable | Pending |",
+        "|---|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for g in groups:
+        for gate, counts in g["transcript_gates"].items():
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        g["language"],
+                        g["provider"],
+                        gate,
+                        *[
+                            str(counts[k])
+                            for k in ("pass", "fail", "unclear", "not_applicable", "pending")
+                        ],
+                    ]
+                )
+                + " |"
+            )
+    return lines
 
 
 def group_summary(rows):
@@ -76,6 +197,20 @@ def group_summary(rows):
                 ),
                 "policy_pass": sum(r.get("grade", {}).get("policy_pass") is True for r in group),
                 "policy_fail": sum(r.get("grade", {}).get("policy_pass") is False for r in group),
+                "state_and_policy_pass": sum(
+                    r.get("grade", {}).get("state_pass") is True
+                    and r.get("grade", {}).get("policy_pass") is True
+                    for r in group
+                ),
+                "transcript_gates": {
+                    gate: {
+                        value: sum(
+                            r.get("assessment", {}).get(gate, "pending") == value for r in group
+                        )
+                        for value in ("pass", "fail", "unclear", "not_applicable", "pending")
+                    }
+                    for gate in ("caller_fidelity", "spoken_truth", "spoken_consent")
+                },
                 "caller_review_pass": sum(
                     r.get("assessment", {}).get("caller_fidelity") == "pass" for r in group
                 ),
@@ -87,6 +222,16 @@ def group_summary(rows):
                     for r in group
                 ),
                 "target_known_components": known_total(costs),
+                "caller_known_components": known_total(
+                    [r["cost"]["caller"]["known_component_estimate_usd"] for r in recorded]
+                ),
+                "carrier_known_components": known_total(
+                    [r["cost"]["carrier_known_usd"] for r in recorded]
+                ),
+                "asr_known_components": known_total(
+                    [r["cost"]["asr_list_price_estimate_usd"] for r in recorded]
+                ),
+                "audio_measurements": measurement_summary(group),
                 "recording_duration_median_s": statistics.median(durations) if durations else None,
                 "human_validated_complete_task_rate": None,
                 "human_validated_latency_ms": None,
@@ -215,6 +360,7 @@ def export(manifest, root, output, draft=False):
             audio_sha256=None,
             attempted=bool(stamp),
             carrier_status=run.get("status"),
+            attempted_at_utc=stamp.get("started_at"),
             grade=target.get("benchmark", {}).get("grade", {}),
             assessment=review,
         )
@@ -465,6 +611,7 @@ def export(manifest, root, output, draft=False):
             ]
             counts = [sum(p["raw_state_pattern"] == pattern for p in pairs) for pattern in patterns]
             lines.append("| " + " | ".join([language, cohort, *map(str, counts)]) + " |")
+    lines += measurement_tables(groups)
     lines += ["", "## Interpretation limits", ""] + ["- " + s for s in report["limitations"]]
     lines += [
         "",
@@ -489,6 +636,7 @@ def export(manifest, root, output, draft=False):
                         "scenario",
                         "attempted",
                         "carrier_status",
+                        "attempted_at_utc",
                         "audio_sha256",
                     )
                 },
@@ -503,6 +651,19 @@ def export(manifest, root, output, draft=False):
                 "recording_duration_s": row["audio_diagnostics"]
                 .get("audio_levels", {})
                 .get("duration_s"),
+                "median_audio_proxy_gap_ms": row["audio_diagnostics"]
+                .get("acoustic_diagnostics", {})
+                .get("median_audio_proxy_gap_ms"),
+                "target_active_frame_median_dbfs": next(
+                    (
+                        c.get("active_frame_median_dbfs")
+                        for c in row["audio_diagnostics"]
+                        .get("audio_levels", {})
+                        .get("channels", [])
+                        if c["channel"] == 1
+                    ),
+                    None,
+                ),
                 "target_known_model_components_usd": row["cost"]["target"][
                     "known_component_estimate_usd"
                 ],
