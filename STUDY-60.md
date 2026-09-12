@@ -1,9 +1,11 @@
 # The 60-call phone study
 
-**Status: prepared protocol and tested software; the new 60 model calls have not
-been conducted.** This is not a new leaderboard. The earlier [pilot](PILOT.md)
+**Status: evaluation running from the setup frozen in v0.4.0.** This is not a
+completed leaderboard. The earlier [pilot](PILOT.md)
 is separate. These instructions supersede the larger example matrix in
-[STUDY.md](STUDY.md) for this release. No registration timestamp or DOI is claimed.
+[STUDY.md](STUDY.md) for this release. The frozen manifest was attached to the
+[v0.4.0 release](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0)
+before the first evaluation call. No registry registration or DOI is claimed.
 
 ## Exact allocation
 
@@ -54,7 +56,8 @@ The shared delivery instruction asks for a full, clearly audible voice and a
 natural conversational pace. The old pilot's GPT target channel had an active
 20-ms-frame median RMS around -24.6 dBFS versus -17.8 dBFS for Gemini (threshold
 300 in PCM16). That is an audio-level diagnostic, not LUFS, speaking speed or a
-whisper classifier. This prompt change still requires live calibration. Raw
+whisper classifier. Calibration did not establish that the quieter level was
+resolved. Raw
 recordings stay at original level and speed; do not normalize one arm secretly.
 
 Independent per-channel `whisper-1` transcripts can be generated with
@@ -194,3 +197,15 @@ not invent a finished report from incomplete evidence.
 .env` can transcribe completed calls while the serial runner continues. It makes
 paid transcription requests, retains raw output and writes level diagnostics;
 it does not place calls or assign personal ratings.
+
+During evidence inspection, the frozen shared procedure was found to contain
+an encoding defect in the Romanian spelling of the product alias. The tool
+enum remains `dry ice`; calibration and early study tools used it correctly.
+This wording defect remains disclosed in the frozen source. It is not silently
+repaired during the evaluation, and causal irrelevance is not assumed.
+
+The strict follow-up grader requires exactly one message. A correct amendment
+request followed by a separate contact-detail message therefore fails this
+criterion. Per-call assessment must explain this rather than describe it as
+failure to record any request. Keep the frozen score and the interpretation
+separate; any later alternative grader is a declared post-hoc analysis.

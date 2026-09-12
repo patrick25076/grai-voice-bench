@@ -1,6 +1,7 @@
 """Environment and grader regression tests. No model calls or network requests."""
 
 import copy
+import time
 import unittest
 from collections import defaultdict
 
@@ -20,9 +21,12 @@ class SandboxTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(case.grade()["state_pass"])
 
     async def test_delayed_tools_record_the_injected_wait(self):
-        sandbox = OrderSandbox(tool_delay_ms=10)
+        # Python 3.12 on Windows uses a 15.625 ms monotonic clock. A 10 ms
+        # asyncio timer can run within one clock tick and legitimately report 0.
+        sandbox = OrderSandbox(tool_delay_ms=50)
         await sandbox.execute("check_stock", {"quantity_kg": 200})
-        self.assertGreaterEqual(sandbox.events[0]["elapsed_ms"], 9)
+        tolerance_ms = time.get_clock_info("monotonic").resolution * 1000 + 1
+        self.assertGreaterEqual(sandbox.events[0]["elapsed_ms"], 50 - tolerance_ms)
         self.assertEqual(sandbox.events[0]["before"], sandbox.events[0]["after"])
 
     async def test_all_cases_are_solvable_in_both_languages_but_not_prepassed(self):

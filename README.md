@@ -12,15 +12,16 @@ model, LiveKit, and Twilio accounts.
 
 The [60-call study protocol](STUDY-60.md) adds 50 English and 10 Romanian calls,
 native tool-schema checks, recorded provider configuration/usage, a frozen batch
-runner and a local listening page with durable personal ratings. **Those new
-calls have not been run.** You can use the framework now; it does not yet provide
-validated results for that study.
+runner and a local listening page with durable personal ratings. **The study is
+running.** Its assignments and runtime hashes were published before evaluation
+in [v0.4.0](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0).
+This is not yet a completed or human-validated results report.
 
 The new [simulation component](SIMULATIONS.md) adds eight order-lifecycle cases:
 create, amend, change address, cancel, escalate an older order, handle a shortage,
 recover an uncertain save, and avoid ordering without consent. Tools execute in
 fresh in-memory business environments with before/after evidence. These additions
-are tested offline; new model comparisons have not been run yet.
+are tested offline and are now being exercised by the phone study.
 
 September 13 calibration found and corrected a caller-agenda ambiguity and a
 recovery-grader restriction before evaluation. It also verified native tool
@@ -38,6 +39,9 @@ This demo uses scripted tool traces, not AI calls. See the [study proposal](STUD
 for the paired Gemini/GPT design and proposed call matrix.
 
 ## Six cases
+
+These are the original pilot cases. The new study uses the eight lifecycle
+cases in [SIMULATIONS.md](SIMULATIONS.md).
 
 | Case               | What it tests                                       |
 | ------------------ | --------------------------------------------------- |
@@ -151,6 +155,12 @@ threshold. They are proxies, not validated semantic turn boundaries. SDK
 barge-in, blind listening scores and broad statistical conclusions require
 additional work. Prompting a model to sound as if it is in a noisy room does
 not test noise robustness.
+
+Use `uv run python offline_analysis.py runs/study60` to replay recorded sandbox
+transitions and compare native provider usage to SDK counters. This makes no
+model or phone calls and uses the exact recorded worker source. It detects
+changed state, results and grades; it cannot verify spoken consent. See
+[evidence export and review](EVIDENCE.md) for the static viewer, CSV and hashes.
 
 Small pilot samples support engineering observations, not a model leaderboard.
 Publish raw anonymized evidence and per-call results before aggregate claims.
