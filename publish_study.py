@@ -361,6 +361,7 @@ def export(manifest, root, output, draft=False):
             attempted=bool(stamp),
             carrier_status=run.get("status"),
             attempted_at_utc=stamp.get("started_at"),
+            collected_at_utc=stamp.get("completed_at"),
             grade=target.get("benchmark", {}).get("grade", {}),
             assessment=review,
         )
@@ -422,6 +423,21 @@ def export(manifest, root, output, draft=False):
         if draft
         else "completed_exploratory_evidence_with_listening_pending",
         "evaluation_software": "https://github.com/patrick25076/grai-voice-bench/tree/v0.4.0",
+        "exact_frozen_source_archive": (
+            "https://github.com/patrick25076/grai-voice-bench/releases/download/"
+            "v0.4.0/frozen-source-v0.4.0.zip"
+        ),
+        "exact_frozen_source_archive_sha256": (
+            "7ec62a4821f5b881409e35e08ce6dfe652d50678a15fef737ae271804a10255c"
+        ),
+        "observed_period_utc": {
+            "first_attempt": min(
+                (r["attempted_at_utc"] for r in rows if r["attempted_at_utc"]), default=None
+            ),
+            "last_evidence_collection": max(
+                (r["collected_at_utc"] for r in rows if r["collected_at_utc"]), default=None
+            ),
+        },
         "frozen_manifest_canonical_sha256": read(manifest.with_suffix(".sha256.json"))["sha256"],
         "scheduled": plan["total_calls"],
         "recordings": sum(bool(r["audio"]) for r in rows),
@@ -482,6 +498,10 @@ def export(manifest, root, output, draft=False):
         f"Status: {report['status']}. {report['recordings']}/{report['scheduled']} recordings.",
         "",
         "Evaluation software: [v0.4.0](https://github.com/patrick25076/grai-voice-bench/tree/v0.4.0).",
+        f"Exact source bytes: [frozen archive]({report['exact_frozen_source_archive']}) "
+        f"(SHA-256 `{report['exact_frozen_source_archive_sha256']}`).",
+        f"Observed UTC period: {report['observed_period_utc']['first_attempt']} to "
+        f"{report['observed_period_utc']['last_evidence_collection']} (last evidence collection).",
         "Canonical frozen manifest SHA-256: `" + report["frozen_manifest_canonical_sha256"] + "`.",
         "",
         "## Recorded sandbox outcomes",
@@ -637,6 +657,7 @@ def export(manifest, root, output, draft=False):
                         "attempted",
                         "carrier_status",
                         "attempted_at_utc",
+                        "collected_at_utc",
                         "audio_sha256",
                     )
                 },

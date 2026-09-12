@@ -72,3 +72,12 @@ prompt change, hidden exclusion or claim of fully prespecified revised scoring.
 The separate rule requiring one follow-up message remains unchanged. A second
 contact-detail message can therefore fail that strict rule even when the main
 amendment request exists; the per-call assessment explains what happened.
+
+## Exact frozen source
+
+For byte-level replay, use the `frozen-source-v0.4.0.zip` asset attached to
+[v0.4.0](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0).
+Git checkouts can normalize line endings. The archive preserves the original
+bytes and all 17 frozen runtime/runner hashes. It was packaged during evaluation
+without changing those files; its historical README describes the pre-study
+state. Later assessment tools and reports are separate from the frozen runtime.
