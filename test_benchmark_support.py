@@ -12,6 +12,8 @@ from livekit.agents import Agent
 from livekit.agents.metrics import AgentSessionUsage
 from voicelab.bench.suite import CASES, grade_state
 from voicelab.bench.tools import _satisfies
+from voicelab.simulations.cases import CASES as SIMULATION_CASES
+from voicelab.simulations.runner import reference_actions
 
 from benchmark_support import BenchmarkContext, usage_snapshot
 
@@ -47,6 +49,17 @@ async def main():
         assert len(b.backend.log.entries) == 1
         assert grade_state(b.call, b.backend)["overall_pass"] is None
     print("Six scenarios: SDK tools executed, state checks passed, audio review remains required")
+    for name in SIMULATION_CASES:
+        b = BenchmarkContext(name, 41, "en")
+        agent = Agent(instructions=b.prompts()[1], tools=b.tools())
+        for tool_name, arguments in reference_actions(b.simulation):
+            tool = next(t for t in agent.tools if t.info.name == tool_name)
+            await tool(raw_arguments=arguments)
+        result = b.result()
+        assert result["grade"]["state_pass"], result["grade"]
+        assert result["sandbox"]["events"]
+        assert result["grade"]["overall_pass"] is None
+    print("Eight lifecycle simulations: SDK wrappers and sandbox state checks passed")
 
 
 if __name__ == "__main__":

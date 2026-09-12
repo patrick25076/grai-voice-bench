@@ -11,20 +11,20 @@ which model is better, faster, cheaper overall, or ready for enterprise use.
 
 ## Setup
 
-| Variable | Configuration |
-| --- | --- |
-| Case | `loading-dock`, Romanian, seed 41 |
-| Need | 200 kg of dry ice on 15 September 2026, before a 15:00 dock closure |
-| Fictional customer | Alex Smythe, Strada Exemplului 10 |
-| Gemini target | `gemini-3.1-flash-live-preview`, Puck voice |
-| GPT-Live target | `gpt-live-1`, Marin voice, `gpt-5.6-terra` Responses backend |
-| Caller in both calls | `gemini-3.1-flash-live-preview` |
-| Runtime in both calls | LiveKit Agents 1.8.1, one self-hosted worker on OVH |
-| Phone path | Twilio IE1, same Romanian test number, LiveKit Germany 2 |
-| Tools | Same synthetic stock, pricing and order backend, fresh per call |
-| Limit | 120 seconds after the target answers |
-| Execution order | GPT-Live first, Gemini second; no counterbalancing in this pilot |
-| Recording | Two-channel carrier WAV on one clock |
+| Variable              | Configuration                                                       |
+| --------------------- | ------------------------------------------------------------------- |
+| Case                  | `loading-dock`, Romanian, seed 41                                   |
+| Need                  | 200 kg of dry ice on 15 September 2026, before a 15:00 dock closure |
+| Fictional customer    | Alex Smythe, Strada Exemplului 10                                   |
+| Gemini target         | `gemini-3.1-flash-live-preview`, Puck voice                         |
+| GPT-Live target       | `gpt-live-1`, Marin voice, `gpt-5.6-terra` Responses backend        |
+| Caller in both calls  | `gemini-3.1-flash-live-preview`                                     |
+| Runtime in both calls | LiveKit Agents 1.8.1, one self-hosted worker on OVH                 |
+| Phone path            | Twilio IE1, same Romanian test number, LiveKit Germany 2            |
+| Tools                 | Same synthetic stock, pricing and order backend, fresh per call     |
+| Limit                 | 120 seconds after the target answers                                |
+| Execution order       | GPT-Live first, Gemini second; no counterbalancing in this pilot    |
+| Recording             | Two-channel carrier WAV on one clock                                |
 
 Seeds fix the fixture and caller prompt. They do not fix generated speech.
 The Gemini caller spoke differently in the two conversations. Provider prompt
@@ -33,15 +33,15 @@ These are comparisons of configured systems, not isolated model inference.
 
 ## Observed saved state
 
-| Observation | GPT-Live configuration | Gemini configuration |
-| --- | --- | --- |
-| Tool calls | `check_stock`, `get_price` | `get_price`, `check_stock`, `place_order` |
-| Saved orders | 0 | 1 |
-| Quantity and date | No saved order | Correct: 200 kg, 15 September |
-| Delivery time | No saved order | 14:00, meets the dock constraint |
-| Surname | No saved order | Saved `Smith`; fixture is `Smythe` |
-| State pass | False | False |
-| Overall pass | Unreviewed | Unreviewed |
+| Observation       | GPT-Live configuration     | Gemini configuration                      |
+| ----------------- | -------------------------- | ----------------------------------------- |
+| Tool calls        | `check_stock`, `get_price` | `get_price`, `check_stock`, `place_order` |
+| Saved orders      | 0                          | 1                                         |
+| Quantity and date | No saved order             | Correct: 200 kg, 15 September             |
+| Delivery time     | No saved order             | 14:00, meets the dock constraint          |
+| Surname           | No saved order             | Saved `Smith`; fixture is `Smythe`        |
+| State pass        | False                      | False                                     |
+| Overall pass      | Unreviewed                 | Unreviewed                                |
 
 The GPT-Live transcript reaches a readback and request for confirmation near
 the cutoff. Absence of a write is a time-limited task failure; it does not
@@ -60,11 +60,11 @@ scorecards remain unchanged; the correction was made after observing this case.
 
 ## Cost components, USD
 
-| Observed component | GPT-Live call | Gemini call |
-| --- | ---: | ---: |
-| Target model estimate, including GPT backend | $0.119045 | $0.056562 |
-| Caller model estimate | $0.057032 | $0.029903 |
-| Retrieved carrier call and recording charges | $0.044500 | $0.044500 |
+| Observed component                           | GPT-Live call | Gemini call |
+| -------------------------------------------- | ------------: | ----------: |
+| Target model estimate, including GPT backend |     $0.119045 |   $0.056562 |
+| Caller model estimate                        |     $0.057032 |   $0.029903 |
+| Retrieved carrier call and recording charges |     $0.044500 |   $0.044500 |
 
 These are **partial components, not all-in totals**. Gemini usage snapshots
 contain tokens without captured modality. LiveKit SIP/media, the inbound

@@ -40,8 +40,15 @@ def session_lock(ledger: Path):
 
 async def run(args):
     from voicelab.bench.suite import scenario
+    from voicelab.simulations.cases import CASES as SIMULATION_CASES
+    from voicelab.simulations.cases import SimulationCase
 
-    scenario(args.scenario, args.seed, args.language)
+    if args.scenario in SIMULATION_CASES:
+        SimulationCase(args.scenario, args.seed, args.language, args.tool_delay_ms)
+    else:
+        if args.tool_delay_ms:
+            raise ValueError("Tool-delay injection requires a sim-* scenario")
+        scenario(args.scenario, args.seed, args.language)
     if not 10 <= args.seconds <= 180:
         raise ValueError("Call duration must be 10..180 seconds")
     if (
@@ -86,6 +93,7 @@ async def _run_locked(args):
         "language": args.language,
         "max_seconds": args.seconds,
         "run_id": args.output.name,
+        "tool_delay_ms": args.tool_delay_ms,
     }
     sid = os.environ["TWILIO_ACCOUNT_SID"]
     base = f"https://api.dublin.ie1.twilio.com/2010-04-01/Accounts/{sid}"
@@ -240,6 +248,12 @@ def main():
     p.add_argument("--language", choices=["en", "ro"], default="ro")
     p.add_argument("--seed", type=int, default=41)
     p.add_argument("--seconds", type=int, default=120)
+    p.add_argument(
+        "--tool-delay-ms",
+        type=int,
+        default=0,
+        help="Fixed sandbox delay per tool, 0..5000 (sim-* only)",
+    )
     p.add_argument("--reserve-eur", type=float, default=3)
     p.add_argument("--cap-eur", type=float, default=20)
     asyncio.run(run(p.parse_args()))

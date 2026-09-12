@@ -5,21 +5,36 @@ caller hears while it works, and what each part costs. This release compares
 `gemini-3.1-flash-live-preview` with `gpt-live-1` plus a declared Responses
 backend. These are system configurations, including their provider runtimes.
 
-**v0.1.0 is an experimental phone-testing framework.** The first pilot contains
+**This is an experimental phone-testing framework.** The first pilot contains
 one matched pair, not a leaderboard. Read the [pilot report](PILOT.md) for
 results, exclusions, and unfinished measurements. Real calls require your own
 model, LiveKit, and Twilio accounts.
 
+The new [simulation component](SIMULATIONS.md) adds eight order-lifecycle cases:
+create, amend, change address, cancel, escalate an older order, handle a shortage,
+recover an uncertain save, and avoid ordering without consent. Tools execute in
+fresh in-memory business environments with before/after evidence. These additions
+are tested offline; new model comparisons have not been run yet.
+
+```sh
+uv sync --locked
+uv run python -m voicelab.simulations demo --output runs/simulation-demo
+```
+
+Open `runs/simulation-demo/index.html` to inspect the sandbox and its grader.
+This demo uses scripted tool traces, not AI calls. See the [study proposal](STUDY.md)
+for the paired Gemini/GPT design and proposed call matrix.
+
 ## Six cases
 
-| Case | What it tests |
-| --- | --- |
-| after-work | Find and book an appointment after 17:00 |
-| spell-my-name | Preserve a spelled surname and a morning constraint |
-| not-tuesday | Respond when a hidden scheduling conflict emerges |
-| loading-dock | Record an order that arrives before the dock closes |
-| exact-quantity | Capture 200 kg without losing the quantity |
-| check-before-order | Answer a stock question before recording an order |
+| Case               | What it tests                                       |
+| ------------------ | --------------------------------------------------- |
+| after-work         | Find and book an appointment after 17:00            |
+| spell-my-name      | Preserve a spelled surname and a morning constraint |
+| not-tuesday        | Respond when a hidden scheduling conflict emerges   |
+| loading-dock       | Record an order that arrives before the dock closes |
+| exact-quantity     | Capture 200 kg without losing the quantity          |
+| check-before-order | Answer a stock question before recording an order   |
 
 Clinic cases are English; order cases support English and Romanian. All
 business records are fictional and in memory. Seeds reproduce setup, not
@@ -52,6 +67,7 @@ Run the checks without credentials or calls:
 ```sh
 uv run python test_benchmark_support.py
 uv run python test_runner.py
+uv run python test_simulations.py
 ```
 
 Create a dedicated LiveKit inbound SIP trunk

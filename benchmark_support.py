@@ -23,15 +23,30 @@ def usage_snapshot(usage) -> dict:
 
 
 class BenchmarkContext:
-    def __init__(self, name: str, seed: int, language: str):
-        self.call = scenario(name, seed, language)
+    def __init__(self, name: str, seed: int, language: str, tool_delay_ms: int = 0):
+        from voicelab.simulations.cases import CASES as SIMULATION_CASES
+        from voicelab.simulations.cases import SimulationCase
+
         self.name = name
-        self.backend = build_backend(self.call.world)
-        if hasattr(self.backend, "stock_kg"):
-            self.backend.stock_kg = 800
+        self.simulation = (
+            SimulationCase(name, seed, language, tool_delay_ms)
+            if name in SIMULATION_CASES
+            else None
+        )
+        if tool_delay_ms and not self.simulation:
+            raise ValueError("Tool-delay injection requires a sim-* scenario")
+        if self.simulation:
+            self.call = self.simulation.call
+            self.backend = self.simulation.sandbox
+            self.job = self.simulation.job
+        else:
+            self.call = scenario(name, seed, language)
+            self.backend = build_backend(self.call.world)
+            if hasattr(self.backend, "stock_kg"):
+                self.backend.stock_kg = 800
+            self.job = JOBS[(self.call.world.domain, language)]
         self.registry = self.backend.registry()
         self.executions: list[dict] = []
-        self.job = JOBS[(self.call.world.domain, language)]
 
     def prompts(self) -> tuple[str, str, str]:
         today = f"\nReference date: {BENCH_TODAY.isoformat()}. This is a fictional demo business."
@@ -74,6 +89,8 @@ class BenchmarkContext:
         return [wrap(tool) for tool in self.registry]
 
     def result(self) -> dict:
+        if self.simulation:
+            return {**self.simulation.result(), "tool_executions": self.executions}
         return {
             "scenario": self.name,
             "seed": self.call.world.seed,

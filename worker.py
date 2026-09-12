@@ -643,6 +643,7 @@ async def entrypoint(ctx: JobContext) -> None:
             metadata.get("scenario", "loading-dock"),
             int(metadata.get("seed", 41)),
             metadata.get("language", "ro"),
+            tool_delay_ms=metadata.get("tool_delay_ms", 0),
         )
 
     sc = _Scorecard(lane=LANE, carrier=CARRIER)
