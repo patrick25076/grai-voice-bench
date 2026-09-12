@@ -57,3 +57,18 @@ The 60-call report is a specific experiment. Provider configuration, caller
 behavior, strict grader choices and acoustic uncertainty constrain what it can
 establish. State success, blocked attempts, spoken truth, human-verified latency,
 known cost components and personal opinion must stay separate.
+
+## Declared scoring correction
+
+`grade_errata.py` applies `empty-stock-order-reference-v1`, identified from the
+ninth evaluation call. An empty optional `order_id` on a stock follow-up and an
+absent reference both identify no order. The frozen grader incorrectly treated
+them differently. The correction was introduced after evaluation started and
+is applied to both models; original grades and transcripts are never overwritten.
+It does not relax quantity, message count, stock, ownership or policy assertions.
+The report shows both versions. This is a declared correction, not a new call,
+prompt change, hidden exclusion or claim of fully prespecified revised scoring.
+
+The separate rule requiring one follow-up message remains unchanged. A second
+contact-detail message can therefore fail that strict rule even when the main
+amendment request exists; the per-call assessment explains what happened.

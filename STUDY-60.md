@@ -198,14 +198,25 @@ not invent a finished report from incomplete evidence.
 paid transcription requests, retains raw output and writes level diagnostics;
 it does not place calls or assign personal ratings.
 
-During evidence inspection, the frozen shared procedure was found to contain
-an encoding defect in the Romanian spelling of the product alias. The tool
-enum remains `dry ice`; calibration and early study tools used it correctly.
-This wording defect remains disclosed in the frozen source. It is not silently
-repaired during the evaluation, and causal irrelevance is not assumed.
+Correction to an earlier inspection note: the Romanian product alias is valid
+UTF-8 in both the frozen source and captured provider instructions. A Windows
+console rendered it incorrectly; inspection of decoded Unicode code points
+confirmed that this was not a defect in the prompt sent to the models.
 
 The strict follow-up grader requires exactly one message. A correct amendment
 request followed by a separate contact-detail message therefore fails this
 criterion. Per-call assessment must explain this rather than describe it as
 failure to record any request. Keep the frozen score and the interpretation
 separate; any later alternative grader is a declared post-hoc analysis.
+
+The stock-request grader also expects an absent optional `order_id`; an empty
+string fails its strict equality check despite a correct saved stock request.
+This is disclosed as a grading limitation, not automatic evidence of a failed
+customer workflow. Native GPT session configuration confirms the field is
+optional at request, start and close; it was not hidden or required differently
+in that captured configuration.
+
+Evaluation callers sometimes say `bye` or `bye-bye` and omit `finish_call`.
+The frozen fallback matches `goodbye` / `la revedere`, so these variants leave a
+silent tail until the cap. Preserve actual session charges and raw durations,
+while distinguishing this caller/controller issue from target task completion.

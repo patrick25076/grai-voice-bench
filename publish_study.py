@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from costs import estimate_usage
+from grade_errata import apply_errata
 
 
 def read(path, default=None):
@@ -66,6 +67,13 @@ def group_summary(rows):
                 "state_pass": sum(r.get("grade", {}).get("state_pass") is True for r in group),
                 "state_fail": sum(r.get("grade", {}).get("state_pass") is False for r in group),
                 "state_unknown": sum(r.get("grade", {}).get("state_pass") is None for r in group),
+                "state_pass_with_erratum": sum(
+                    r.get("grader_errata", {}).get("grade", {}).get("state_pass") is True
+                    for r in group
+                ),
+                "erratum_applied_calls": sum(
+                    bool(r.get("grader_errata", {}).get("applied")) for r in group
+                ),
                 "policy_pass": sum(r.get("grade", {}).get("policy_pass") is True for r in group),
                 "policy_fail": sum(r.get("grade", {}).get("policy_pass") is False for r in group),
                 "caller_review_pass": sum(
@@ -88,10 +96,61 @@ def group_summary(rows):
     return result
 
 
+def stratified_summary(rows, keys):
+    groups = defaultdict(list)
+    for row in rows:
+        groups[tuple(row[k] for k in keys)].append(row)
+    return [
+        {**summary, **dict(zip(keys, identity, strict=True))}
+        for identity, group in sorted(groups.items())
+        for summary in group_summary(group)
+    ]
+
+
+def paired_outcomes(rows):
+    pairs = defaultdict(dict)
+    for row in rows:
+        if row["provider"] in pairs[row["pair_id"]]:
+            raise ValueError("Duplicate target arm in a matched pair")
+        pairs[row["pair_id"]][row["provider"]] = row
+    result = []
+    for identity, arms in sorted(pairs.items()):
+        sample = next(iter(arms.values()))
+        states = {
+            p: arms.get(p, {}).get("grade", {}).get("state_pass") for p in ("gemini", "gptlive")
+        }
+        if any(value is None for value in states.values()):
+            pattern = "incomplete_evidence"
+        elif all(states.values()):
+            pattern = "both_pass"
+        elif not any(states.values()):
+            pattern = "both_fail"
+        else:
+            pattern = next(p for p, value in states.items() if value) + "_only_pass"
+        result.append(
+            {
+                "pair_id": identity,
+                **{k: sample[k] for k in ("language", "scenario", "caller_provider")},
+                "raw_state_pattern": pattern,
+                "both_caller_transcript_reviews_pass": len(arms) == 2
+                and all(
+                    a.get("assessment", {}).get("caller_fidelity") == "pass" for a in arms.values()
+                ),
+                "states": states,
+            }
+        )
+    return result
+
+
 def export(manifest, root, output, draft=False):
     if output.exists():
         raise ValueError("Choose a fresh output directory")
     plan = read(manifest)
+    canonical = hashlib.sha256(
+        json.dumps(plan, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
+    if canonical != read(manifest.with_suffix(".sha256.json"))["sha256"]:
+        raise ValueError("Frozen manifest hash mismatch")
     summary = {r["run_id"]: r for r in read(root / "summary.json", [])}
     rows, to_copy = [], []
     for index, trial in enumerate(plan["trials"], 1):
@@ -119,6 +178,12 @@ def export(manifest, root, output, draft=False):
                 f"{trial['trial_id']}: incomplete evidence/review; use --draft explicitly"
             )
         if not draft:
+            from study import check_evidence
+
+            check_evidence(folder, plan["observed_profiles"])
+            for key in ("provider", "caller_provider", "scenario", "language", "seed"):
+                if run["setup"].get(key) != trial[key]:
+                    raise ValueError(f"{trial['trial_id']}: assignment mismatch for {key}")
             expected_sources = {
                 p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in [folder / "agent-evidence.json", folder / "caller-evidence.json", *wavs]
@@ -188,6 +253,7 @@ def export(manifest, root, output, draft=False):
         row["sandbox"] = target.get("benchmark", {}).get("sandbox")
         row["tool_executions"] = target.get("benchmark", {}).get("tool_executions", [])
         row["caller_agenda"] = caller.get("benchmark", {}).get("caller_prompt")
+        row["grader_errata"] = apply_errata(target.get("benchmark", {}))
         row["audio_diagnostics"] = {k: v for k, v in audit.items() if k not in {"source_sha256"}}
         carrier = summary.get(trial["trial_id"], {})
         row["cost"] = {
@@ -214,6 +280,9 @@ def export(manifest, root, output, draft=False):
         "scheduled": plan["total_calls"],
         "recordings": sum(bool(r["audio"]) for r in rows),
         "groups": groups,
+        "caller_strata": stratified_summary(rows, ("language", "caller_provider")),
+        "case_strata": stratified_summary(rows, ("language", "scenario")),
+        "paired_outcomes": paired_outcomes(rows),
         "trials": rows,
         "cost_totals": {
             key: known_total([r["cost"][key] for r in rows])
@@ -239,11 +308,18 @@ def export(manifest, root, output, draft=False):
             "unresolved; EUR reservations are not spend.",
             "Seven development calls are excluded. Evaluation code and assignments were frozen "
             "before the first scored call.",
-            "The frozen shared procedure contains an encoding defect in a Romanian product alias; "
-            "the explicit enum is dry ice. No causal irrelevance is assumed. Do not silently "
-            "repair the frozen experiment.",
             "Patrick's personal scores and human-validated complete-task/latency measurements "
             "remain pending unless explicitly supplied in a later report.",
+            "The frozen lexical hangup fallback misses bye/bye-bye when the caller omits its "
+            "finish_call tool. Preserve these silent tails and charges, but do not call them "
+            "slow target task completion.",
+            "The strict stock-followup grader distinguishes an empty optional order reference "
+            "from an absent one; the single-message rule also rejects a separate contact note. "
+            "Per-call assessments disclose these grading limitations rather than treating every "
+            "strict failure as failure of the customer's business goal.",
+            "A declared post-start erratum treats an empty optional stock-request order reference "
+            "as absent. It is applied equally to both targets and preserves original scores; it "
+            "does not relax quantity, message count, stock, order ownership or policy checks.",
         ],
     }
     output.mkdir(parents=True)
@@ -289,6 +365,106 @@ def export(manifest, root, output, draft=False):
             )
             + " |"
         )
+    lines += [
+        "",
+        "## Declared grading erratum",
+        "",
+        "An empty optional stock-request order reference and an absent one both identify no "
+        "order. The frozen grader distinguished them. The correction below was declared "
+        "after evaluation began, applies to both targets, and changes only that equivalence. "
+        "Original scores above and all original traces remain preserved.",
+        "",
+        "| Language | Target | Original state passes | Passes with erratum | Affected calls |",
+        "|---|---|---:|---:|---:|",
+    ]
+    for group in groups:
+        lines.append(
+            "| "
+            + " | ".join(
+                str(group[k])
+                for k in (
+                    "language",
+                    "provider",
+                    "state_pass",
+                    "state_pass_with_erratum",
+                    "erratum_applied_calls",
+                )
+            )
+            + " |"
+        )
+    lines += [
+        "",
+        "## Outcomes by caller provider",
+        "",
+        "| Language | Caller | Target | State pass | State fail | State unknown |",
+        "|---|---|---|---:|---:|---:|",
+    ]
+    for group in report["caller_strata"]:
+        lines.append(
+            "| "
+            + " | ".join(
+                str(group[k])
+                for k in (
+                    "language",
+                    "caller_provider",
+                    "provider",
+                    "state_pass",
+                    "state_fail",
+                    "state_unknown",
+                )
+            )
+            + " |"
+        )
+    lines += [
+        "",
+        "## Outcomes by workflow",
+        "",
+        "| Language | Case | Target | State pass | State fail | State unknown |",
+        "|---|---|---|---:|---:|---:|",
+    ]
+    for group in report["case_strata"]:
+        lines.append(
+            "| "
+            + " | ".join(
+                str(group[k])
+                for k in (
+                    "language",
+                    "scenario",
+                    "provider",
+                    "state_pass",
+                    "state_fail",
+                    "state_unknown",
+                )
+            )
+            + " |"
+        )
+    lines += [
+        "",
+        "## Matched raw state outcomes",
+        "",
+        "All pairs remain in data.json, including caller deviations and unresolved audio.",
+        "",
+        "| Language | Cohort | Both pass | Both fail | Gemini only pass "
+        "| GPT only pass | Incomplete |",
+        "|---|---|---:|---:|---:|---:|---:|",
+    ]
+    patterns = (
+        "both_pass",
+        "both_fail",
+        "gemini_only_pass",
+        "gptlive_only_pass",
+        "incomplete_evidence",
+    )
+    for language in ("en", "ro"):
+        for cohort in ("all", "both caller transcript reviews pass"):
+            pairs = [
+                p
+                for p in report["paired_outcomes"]
+                if p["language"] == language
+                and (cohort == "all" or p["both_caller_transcript_reviews_pass"])
+            ]
+            counts = [sum(p["raw_state_pattern"] == pattern for p in pairs) for pattern in patterns]
+            lines.append("| " + " | ".join([language, cohort, *map(str, counts)]) + " |")
     lines += ["", "## Interpretation limits", ""] + ["- " + s for s in report["limitations"]]
     lines += [
         "",
@@ -317,6 +493,8 @@ def export(manifest, root, output, draft=False):
                     )
                 },
                 "state_pass": row["grade"].get("state_pass"),
+                "state_pass_with_erratum": row["grader_errata"]["grade"].get("state_pass"),
+                "grader_errata": ";".join(row["grader_errata"]["applied"]),
                 "policy_pass": row["grade"].get("policy_pass"),
                 "caller_transcript_review": row["assessment"].get("caller_fidelity"),
                 "spoken_truth_transcript_review": row["assessment"].get("spoken_truth"),
