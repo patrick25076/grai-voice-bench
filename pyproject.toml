@@ -1,0 +1,21 @@
+[project]
+name = "grai-voice-bench"
+version = "0.1.0"
+description = "GRAI Labs: reusable speech-to-speech phone benchmark with mock business tools"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "livekit-agents[google,openai]==1.8.1",
+    "python-dotenv>=1.0",
+    "httpx>=0.28,<1",
+]
+
+[tool.uv]
+# Run the checked-in worker and command-line scripts directly.
+package = false
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
