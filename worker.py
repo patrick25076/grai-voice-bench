@@ -310,6 +310,7 @@ class BareAgent(Agent):
     def __init__(self, instructions: str, tools: list | None = None) -> None:
         super().__init__(instructions=instructions, tools=tools or [])
         self.audio_out_bytes = 0
+        self.output_formats: dict[str, dict] = {}
 
     async def realtime_audio_output_node(
         self, audio: AsyncIterable[rtc.AudioFrame], model_settings: Any
@@ -322,6 +323,10 @@ class BareAgent(Agent):
         """
         async for frame in audio:
             self.audio_out_bytes += frame.samples_per_channel * frame.num_channels * 2
+            key = f"pcm_s16le/{frame.sample_rate}/{frame.num_channels}"
+            stats = self.output_formats.setdefault(key, {"frames": 0, "audio_seconds": 0.0})
+            stats["frames"] += 1
+            stats["audio_seconds"] += frame.samples_per_channel / frame.sample_rate
             yield frame
 
 
@@ -640,7 +645,7 @@ async def entrypoint(ctx: JobContext) -> None:
         from benchmark_support import BenchmarkContext
 
         benchmark = BenchmarkContext(
-            metadata.get("scenario", "loading-dock"),
+            metadata.get("scenario", "sim-create-order"),
             int(metadata.get("seed", 41)),
             metadata.get("language", "ro"),
             tool_delay_ms=metadata.get("tool_delay_ms", 0),
@@ -722,6 +727,11 @@ async def entrypoint(ctx: JobContext) -> None:
     if is_caller and benchmark:
         backend_instruction = benchmark.call.caller_prompt
     model = _build_gptlive_model(backend_instruction) if is_gptlive else _build_model()
+    if benchmark:
+        from provider_audit import attach_audit, runtime_fingerprint
+
+        attach_audit(model, provider, extra)
+        extra["runtime_source_sha256"] = runtime_fingerprint()
     session = _build_session(model)
     # The VOICE prompt. On GPT-Live the procedure lives in responses_options and
     # only conversational behaviour belongs here; on Gemini the model reasons
@@ -732,6 +742,10 @@ async def entrypoint(ctx: JobContext) -> None:
     if is_caller and benchmark:
         instruction = benchmark.call.caller_prompt
     agent = BareAgent(instruction, benchmark.tools() if benchmark and not is_caller else [])
+    extra["tool_declarations"] = (
+        [tool.declaration() for tool in benchmark.registry] if benchmark and not is_caller else []
+    )
+    extra["state_events"] = []
     extra["instruction_sha256"] = hashlib.sha256(instruction.encode()).hexdigest()
     extra["backend_instruction_sha256"] = (
         hashlib.sha256(backend_instruction.encode()).hexdigest() if backend_instruction else None
@@ -766,6 +780,14 @@ async def entrypoint(ctx: JobContext) -> None:
 
     @session.on("agent_state_changed")
     def _agent_state(ev: Any) -> None:
+        extra["state_events"].append(
+            {
+                "actor": "agent",
+                "old": ev.old_state,
+                "new": ev.new_state,
+                "unix_seconds": time.time(),
+            }
+        )
         if ev.new_state == "speaking":
             state["agent_speaking"] = True
             if state["first_audio_at"] is None:
@@ -777,6 +799,9 @@ async def entrypoint(ctx: JobContext) -> None:
 
     @session.on("user_state_changed")
     def _user_state(ev: Any) -> None:
+        extra["state_events"].append(
+            {"actor": "user", "old": ev.old_state, "new": ev.new_state, "unix_seconds": time.time()}
+        )
         if ev.new_state == "speaking" and state["first_audio_at"] is None:
             state["user_spoke_first"] = True
         if ev.new_state == "listening" and ev.old_state == "speaking":
@@ -799,7 +824,9 @@ async def entrypoint(ctx: JobContext) -> None:
         role = getattr(ev.item, "role", None)
         text = getattr(ev.item, "text_content", None)
         if role and text:
-            extra["transcript"].append({"role": role, "text": text})
+            extra["transcript"].append(
+                {"role": role, "text": text, "received_at_unix": time.time()}
+            )
 
     @session.on("error")
     def _error(ev: Any) -> None:
@@ -847,17 +874,15 @@ async def entrypoint(ctx: JobContext) -> None:
     else:
         extra["greeting_path"] = "disabled"
 
-    written = False
+    scorecard_path = None
 
     def _write_scorecard() -> None:
-        nonlocal written
-        if written:
-            return
-        written = True
+        nonlocal scorecard_path
         watchdog.got_response()
         if sc.ended_at is None:
             sc.ended_at = time.monotonic()
         sc.audio_out_bytes = agent.audio_out_bytes
+        extra["output_audio_formats"] = agent.output_formats
 
         # Two different clocks, and the difference matters when comparing lanes.
         # started_at is job start, so first audio measured from it also contains
@@ -898,14 +923,19 @@ async def entrypoint(ctx: JobContext) -> None:
         payload["lane_extra"] = extra
         SCORECARD_DIR.mkdir(parents=True, exist_ok=True)
         name = f"{LANE}-{CARRIER}-{ctx.room.name}-{int(time.time())}.json"
-        path = SCORECARD_DIR / name
-        path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+        if scorecard_path is None:
+            scorecard_path = SCORECARD_DIR / name
+        path = scorecard_path
+        pending = path.with_suffix(".tmp")
+        pending.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+        pending.replace(path)
         logger.info("scorecard -> %s", path)
         logger.info("BENCH_RESULT %s", json.dumps(payload, default=str))
 
     # Two triggers on purpose. `close` covers the caller hanging up mid-job;
     # the shutdown callback covers Ctrl+C in console mode and a worker drain,
-    # where no close event ever arrives. `written` makes the second one a no-op.
+    # where no close event ever arrives. Rewrite the same file on shutdown so
+    # late final provider usage is retained rather than frozen at close.
     @session.on("close")
     def _close_write(_ev: Any) -> None:
         _write_scorecard()

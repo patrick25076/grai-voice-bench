@@ -1,5 +1,8 @@
 # Study proposal: voice agents completing and revising phone orders
 
+For the current release, use the [60-call protocol](STUDY-60.md). It supersedes
+the larger example matrix below; the methods discussion remains background.
+
 The research question is: **How reliably does each configured voice system turn
 a changing spoken request into the correct business state, and what time and
 cost does that require?** Naturalness is a separate outcome.
@@ -78,19 +81,19 @@ in the baseline. If changing a model or prompt, change one tested factor at a ti
 
 ## Measurements and adjudication
 
-| Outcome | Evidence and rule |
-| --- | --- |
-| Complete task success | Correct final state AND mandatory lifecycle/policy checks AND verified caller adherence, consent and truthful spoken outcome |
-| Entity correctness | Names, quantities, dates, address and unchanged fields; declared normalization only |
-| Action correctness | Correct order reference, correct create/update/cancel sequence, no duplicate or unauthorized action |
-| Recovery | State after tool failure, retries, duplicate prevention, and whether the caller receives a truthful explanation |
-| Time to completion | From the declared task start until its final verified outcome is communicated; report unresolved/cutoff calls separately |
-| First audible response | End of eligible caller speech to first audible response; acknowledgements are labeled |
-| Substantive response | End of the request to an answer that advances it, separate from a filler acknowledgement |
-| Tool waiting | Tool durations plus caller-experienced silence while work is pending |
-| Interruption handling | Controlled caller onset to agent yield, plus whether the corrected request reaches state |
-| Cost | Target voice, reasoning backend, carrier/SIP/media and hosting; caller/judge costs shown separately |
-| Naturalness | Blind listener rubric for intelligibility, pacing and conversational quality |
+| Outcome                | Evidence and rule                                                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Complete task success  | Correct final state AND mandatory lifecycle/policy checks AND verified caller adherence, consent and truthful spoken outcome |
+| Entity correctness     | Names, quantities, dates, address and unchanged fields; declared normalization only                                          |
+| Action correctness     | Correct order reference, correct create/update/cancel sequence, no duplicate or unauthorized action                          |
+| Recovery               | State after tool failure, retries, duplicate prevention, and whether the caller receives a truthful explanation              |
+| Time to completion     | From the declared task start until its final verified outcome is communicated; report unresolved/cutoff calls separately     |
+| First audible response | End of eligible caller speech to first audible response; acknowledgements are labeled                                        |
+| Substantive response   | End of the request to an answer that advances it, separate from a filler acknowledgement                                     |
+| Tool waiting           | Tool durations plus caller-experienced silence while work is pending                                                         |
+| Interruption handling  | Controlled caller onset to agent yield, plus whether the corrected request reaches state                                     |
+| Cost                   | Target voice, reasoning backend, carrier/SIP/media and hosting; caller/judge costs shown separately                          |
+| Naturalness            | Blind listener rubric for intelligibility, pacing and conversational quality                                                 |
 
 The sandbox can establish writes and stock changes. An agent-supplied confirmation
 flag cannot establish spoken consent. A text judge cannot establish audio overlap.

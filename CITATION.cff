@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Cite the tagged software version you used. Study results require their own dated report and evidence manifest."
+title: "GRAI Voice Bench: phone simulations and sandbox evaluation for voice agents"
+type: software
+authors:
+  - name: "GRAI Labs contributors"
+version: 0.3.0
+date-released: 2026-09-12
+url: "https://github.com/patrick25076/grai-voice-bench"
+repository-code: "https://github.com/patrick25076/grai-voice-bench"
+license: MIT
+abstract: "An experimental open-source framework for paired speech-to-speech phone tests, synthetic business tools, state assertions, auditable usage capture, and separate personal listening ratings."

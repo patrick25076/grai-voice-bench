@@ -10,6 +10,12 @@ one matched pair, not a leaderboard. Read the [pilot report](PILOT.md) for
 results, exclusions, and unfinished measurements. Real calls require your own
 model, LiveKit, and Twilio accounts.
 
+The [60-call study protocol](STUDY-60.md) adds 50 English and 10 Romanian calls,
+native tool-schema checks, recorded provider configuration/usage, a frozen batch
+runner and a local listening page with durable personal ratings. **Those new
+calls have not been run.** You can use the framework now; it does not yet provide
+validated results for that study.
+
 The new [simulation component](SIMULATIONS.md) adds eight order-lifecycle cases:
 create, amend, change address, cancel, escalate an older order, handle a shortage,
 recover an uncertain save, and avoid ordering without consent. Tools execute in

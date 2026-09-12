@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import hashlib
 import json
 import math
 import os
+import tempfile
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -54,11 +56,13 @@ async def run(args):
     if (
         not math.isfinite(args.reserve_eur)
         or not math.isfinite(args.cap_eur)
-        or args.reserve_eur < 2
-        or not 0 < args.cap_eur <= 25
+        or not 0 < args.reserve_eur <= args.cap_eur
+        or args.cap_eur <= 0
     ):
-        raise ValueError("Reserve at least EUR 2/call; use a finite cap up to EUR 25")
-    with session_lock(args.ledger.resolve()):
+        raise ValueError("Use an explicit positive finite cap and reservation within that cap")
+    route_key = hashlib.sha256(f"{args.trunk}/{args.rule}".encode()).hexdigest()
+    route_ledger = Path(tempfile.gettempdir()) / "grai-voice-bench-routes" / f"{route_key}.json"
+    with session_lock(route_ledger), session_lock(args.ledger.resolve()):
         await _run_locked(args)
 
 

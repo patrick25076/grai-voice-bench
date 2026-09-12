@@ -31,16 +31,16 @@ and are not AI success scores. `overall_pass` stays null.
 
 ## The order lifecycle pack
 
-| Case | Caller agenda | What the evaluator checks |
-| --- | --- | --- |
-| `sim-create-order` | Order 200 kg for the agreed address and date | One complete order, correct fields and stock reservation |
-| `sim-amend-quantity` | After the agent says it saved 200 kg, increase to 250 kg | Original create, then update of that reference; no duplicate; stock changes by 50 |
-| `sim-change-address` | After the save, switch to the second site | Same order, new address, all unrelated fields preserved |
-| `sim-cancel-order` | After the save, cancel it | Same order marked cancelled and stock released |
-| `sim-existing-order` | Change an order from a previous call | Lookup and a follow-up message; existing order unchanged |
-| `sim-stock-shortage` | Need 200 kg when only 100 kg are available | Stock checked, no smaller or impossible order, follow-up request saved |
-| `sim-retry-after-timeout` | Complete one order despite an uncertain save | One committed order, same-key recovery, no duplicate reservation |
-| `sim-no-consent` | Ask for price and availability only | Read tools used; no order or unnecessary message created |
+| Case                      | Caller agenda                                            | What the evaluator checks                                                         |
+| ------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `sim-create-order`        | Order 200 kg for the agreed address and date             | One complete order, correct fields and stock reservation                          |
+| `sim-amend-quantity`      | After the agent says it saved 200 kg, increase to 250 kg | Original create, then update of that reference; no duplicate; stock changes by 50 |
+| `sim-change-address`      | After the save, switch to the second site                | Same order, new address, all unrelated fields preserved                           |
+| `sim-cancel-order`        | After the save, cancel it                                | Same order marked cancelled and stock released                                    |
+| `sim-existing-order`      | Change an order from a previous call                     | Lookup and a follow-up message; existing order unchanged                          |
+| `sim-stock-shortage`      | Need 200 kg when only 100 kg are available               | Stock checked, no smaller or impossible order, follow-up request saved            |
+| `sim-retry-after-timeout` | Complete one order despite an uncertain save             | One committed order, same-key recovery, no duplicate reservation                  |
+| `sim-no-consent`          | Ask for price and availability only                      | Read tools used; no order or unnecessary message created                          |
 
 English and Romanian are supported. Seeded caller personas are concise,
 hesitant, or hurried. These are conversational instructions, not physical

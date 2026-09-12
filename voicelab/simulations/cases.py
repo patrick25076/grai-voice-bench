@@ -82,7 +82,10 @@ class SimulationCase:
             persona="Nora",
             business="GRAI Demo Supplies, a fictional dry-ice supplier",
             language_name="Romanian" if language == "ro" else "English",
-            manner="Warm, concise and clear. Ask one question at a time.",
+            manner=(
+                "Warm, concise and clear. Use a full, clearly audible speaking voice "
+                "and a natural conversational pace. Ask one question at a time."
+            ),
             procedure=PROCEDURE,
             facts="All records are synthetic. Delivery details must come from the caller and tools.",
             greeting_hint="Ask how you can help with an order.",

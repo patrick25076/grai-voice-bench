@@ -1,6 +1,6 @@
 [project]
 name = "grai-voice-bench"
-version = "0.2.0"
+version = "0.3.0"
 description = "GRAI Labs: reusable speech-to-speech phone benchmark with mock business tools"
 requires-python = ">=3.12,<3.14"
 dependencies = [
