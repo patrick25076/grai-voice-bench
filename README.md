@@ -18,7 +18,12 @@ The addendum preserves all original recordings and scores. See the
 [framework direction and existing alternatives](FRAMEWORK-DIRECTION.md) for what
 is implemented and what remains planned, including browser and Telnyx transports.
 
-This remains an experimental phone-testing framework. Personal listening scores,
+The [GRAI Labs results page](https://grailabs.ai/benchmarks/gptvsgemini) adds
+13 submitted personal listening reviews, recording-based speech detection and
+captured GPT backend response timings. See [the timing and listening addendum](TIMING-AND-LISTENING.md)
+for exact definitions, coverage and the reusable offline `timing.py` analyzer.
+
+This remains an experimental phone-testing framework. Complete listening coverage,
 human-validated response latency and full invoices are pending. Caller deviations,
 strict grader limitations and one declared scoring correction are visible; raw
 state scores are not a model leaderboard. The earlier [two-call pilot](PILOT.md)
