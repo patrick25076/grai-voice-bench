@@ -1,5 +1,11 @@
 # GRAI Voice Bench
 
+**Try it without API keys:** [the first-run guide](GETTING-STARTED.md) walks through
+an offline sandbox inspector, tool-trace replay and the interface for your own
+agent. The mock business tools and graders work today; browser/Telnyx voice
+transports are planned. See [security and data handling](SECURITY.md) before
+connecting paid accounts or publishing new recordings.
+
 Test whether a speech-to-speech agent completes a real phone task, what the
 caller hears while it works, and what each part costs. This release compares
 `gemini-3.1-flash-live-preview` with `gpt-live-1` plus a declared Responses
