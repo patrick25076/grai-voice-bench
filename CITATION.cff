@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Cite this versioned dataset with its report, limitations and file hashes."
+title: "GRAI Labs 60-call telephone study: Gemini 3.1 Flash Live and GPT-Live-1"
+type: dataset
+authors:
+  - name: "GRAI Labs"
+version: study60-v1
+date-released: 2026-09-13
+url: "https://github.com/patrick25076/grai-voice-bench/releases/tag/study60-v1"
+repository-code: "https://github.com/patrick25076/grai-voice-bench"
+license: MIT
+abstract: "Sixty synthetic telephone calls in thirty matched pairs, with original stereo audio, sandbox tool traces, deterministic grades and provisional transcript-assisted assessments. Personal listening scores, human-validated latency and full invoices remain pending."
