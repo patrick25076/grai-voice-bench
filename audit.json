@@ -1,0 +1,3495 @@
+{
+  "version": "study60-audit-v1",
+  "generated_at": "2026-09-13T01:45:37.916056+00:00",
+  "kind": "post-publication_diagnostic_addendum_original_scores_unchanged",
+  "source_study": "grai-phone-60-v1",
+  "scope": "Existing captured configurations and recorded results only; no new model or telephone calls.",
+  "schema_comparison_limits": [
+    "Names, descriptions, property types, required fields, enums and numeric constraints are compared.",
+    "Google upper-case types and omitted empty parameter objects are normalized; raw declarations remain below.",
+    "additionalProperties and propertyOrdering are excluded from common-contract comparison. Google SDK omits additionalProperties:false present in the shared/OpenAI schemas; full provider constraint equivalence is not established.",
+    "Capture occurs where the pinned SDK builds its requested configuration, not inside the provider. Successful invocation in another call is supporting evidence, not proof of optimal prompting.",
+    "State grades, transcripts and review labels retain the original study's limitations. A passing capture audit cannot isolate model weights from prompts, adapters or caller behavior."
+  ],
+  "summary": {
+    "trials": 60,
+    "captured_contract_match": 60,
+    "pairs": 30,
+    "matched_pair_contracts": 30,
+    "successful_lookup_samples": {
+      "gemini": [
+        "S003",
+        "S048"
+      ],
+      "gptlive": [
+        "S004",
+        "S013",
+        "S034",
+        "S047"
+      ]
+    },
+    "headlines": {
+      "Strict state checks failed; inspect the cause": 16,
+      "State checks passed": 36,
+      "State checks passed; blocked tool attempt recorded": 6,
+      "State checks pass with the declared grading correction": 2
+    }
+  },
+  "configurations": {
+    "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57": {
+      "provider": "gptlive",
+      "model": "gpt-live-1",
+      "backend_model": "gpt-5.6-terra",
+      "instruction": "You are Nora, a calm, friendly voice assistant for GRAI Demo Supplies, a fictional dry-ice supplier.\n\nSpeak Romanian and only Romanian, from your very first word. Do not switch language or accent because of a place name, a person's name or a phone number. If the caller speaks another language, stay in Romanian.\n\nWarm, concise and clear. Use a full, clearly audible speaking voice and a natural conversational pace. Ask one question at a time.\n\nSpeak in short sentences, one point at a time. If the caller interrupts, stop\nand listen.\nBACKEND TOOLS\nThe backend can: get_price, check_stock, lookup_order, record_order, update_order, cancel_order, take_message.\n\nWHEN TO DELEGATE\n- The caller asks about availability, prices, stock, or practice details.\n- The caller wants to book, order, change or cancel anything.\n- Any question whose answer depends on a record you do not already hold.\n\nWHEN NOT TO DELEGATE\n- Greetings, acknowledgements and small talk.\n- Asking the caller a clarifying question.\n- Repeating back something the caller just told you.\n\nDelegate before giving an answer that depends on backend work. Do not guess the\nresult while waiting. If the backend has not answered yet, say you are checking\nrather than inventing an answer.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "backend_instruction": "You are the reasoning backend for Nora, who is on a live phone call for\nGRAI Demo Supplies, a fictional dry-ice supplier. She speaks; you decide and use tools.\n\nHelp callers order dry ice or discuss existing orders.\nUse get_price and check_stock for current facts. Collect every required order\nfield. Product 'dry ice' is the tool value for gheață carbonică as well.\nRead back key details and get agreement before any create, change or cancellation.\nUse record_order once per new order. After a correction to a saved order, use\nupdate_order with its existing reference. Use cancel_order for a caller's cancellation.\nYou may change or cancel only orders created in THIS call. For older orders,\nlook them up, explain the limit, and take_message for the team. A message is a\nrequest, not a completed change. Never access another customer's order.\nEach requested action needs an idempotency_key you choose. Keep exactly the same\nkey and arguments when retrying an uncertain action; use a new key for a different\naction. On outcome_unknown recover the first action before claiming success.\nDo not infer consent from your own confirmed flag. Do not invent missing details,\nsave an inquiry as an order, or promise success before the tool verifies it.\nIf stock is insufficient, explain it and offer a message; don't silently change\nthe quantity. Preserve all fields not explicitly changed by the caller.\n\n\nUseful facts:\nAll records are synthetic. Delivery details must come from the caller and tools.\n\nReturn a short, spoken-sounding answer she can say. Do not return lists or\nformatting. If a tool failed, say what actually happened rather than glossing\nover it: she must never tell the caller something is done when it is not.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "requested_tools": [
+        {
+          "name": "get_price",
+          "description": "Quote dry ice in kg. Does not place an order.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "check_stock",
+          "description": "Read current stock in kg. Does not reserve it.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "lookup_order",
+          "description": "Read only this caller's orders. Older orders require human changes.",
+          "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "record_order",
+          "description": "Record a fully specified, verbally confirmed order. Retry with the SAME key and data after an uncertain result.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "family_name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "product": {
+                "type": "string",
+                "enum": [
+                  "dry ice"
+                ]
+              },
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "delivery_date": {
+                "type": "string",
+                "description": "YYYY-MM-DD"
+              },
+              "delivery_time": {
+                "type": "string",
+                "description": "HH:MM"
+              },
+              "delivery_address": {
+                "type": "string"
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "family_name",
+              "phone",
+              "product",
+              "quantity_kg",
+              "delivery_date",
+              "delivery_time",
+              "delivery_address",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "update_order",
+          "description": "Change an order created in THIS call. Preserve its reference. Confirm the change; use a NEW action key.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "order_id": {
+                "type": "string"
+              },
+              "changes": {
+                "type": "object",
+                "properties": {
+                  "family_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "product": {
+                    "type": "string",
+                    "enum": [
+                      "dry ice"
+                    ]
+                  },
+                  "quantity_kg": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "delivery_date": {
+                    "type": "string",
+                    "description": "YYYY-MM-DD"
+                  },
+                  "delivery_time": {
+                    "type": "string",
+                    "description": "HH:MM"
+                  },
+                  "delivery_address": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "order_id",
+              "changes",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "cancel_order",
+          "description": "Cancel an order created in THIS call after caller confirmation.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "order_id": {
+                "type": "string"
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "order_id",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "take_message",
+          "description": "Record a request for human follow-up. Does not change an order or send a notification.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "request_type": {
+                "type": "string",
+                "enum": [
+                  "amend_existing",
+                  "stock_request"
+                ]
+              },
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "order_id": {
+                "type": "string",
+                "description": "Required for amend_existing; use a reference from lookup_order."
+              }
+            },
+            "required": [
+              "message",
+              "request_type",
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "capture_scope": "SDK-built requested configuration, not a provider acknowledgement of each tool"
+    },
+    "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03": {
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-live-preview",
+      "backend_model": null,
+      "instruction": "You are Nora, answering the phone for GRAI Demo Supplies, a fictional dry-ice supplier.\n\nSpeak Romanian and only Romanian, from your very first word. Do not switch language or accent because of a place name, a person's name or a phone number. If the caller speaks another language, stay in Romanian.\n\nWarm, concise and clear. Use a full, clearly audible speaking voice and a natural conversational pace. Ask one question at a time.\n\nHelp callers order dry ice or discuss existing orders.\nUse get_price and check_stock for current facts. Collect every required order\nfield. Product 'dry ice' is the tool value for gheață carbonică as well.\nRead back key details and get agreement before any create, change or cancellation.\nUse record_order once per new order. After a correction to a saved order, use\nupdate_order with its existing reference. Use cancel_order for a caller's cancellation.\nYou may change or cancel only orders created in THIS call. For older orders,\nlook them up, explain the limit, and take_message for the team. A message is a\nrequest, not a completed change. Never access another customer's order.\nEach requested action needs an idempotency_key you choose. Keep exactly the same\nkey and arguments when retrying an uncertain action; use a new key for a different\naction. On outcome_unknown recover the first action before claiming success.\nDo not infer consent from your own confirmed flag. Do not invent missing details,\nsave an inquiry as an order, or promise success before the tool verifies it.\nIf stock is insufficient, explain it and offer a message; don't silently change\nthe quantity. Preserve all fields not explicitly changed by the caller.\n\n\nUseful facts:\nAll records are synthetic. Delivery details must come from the caller and tools.\n\nYou are on a phone call. Speak in short sentences, one point at a time. Do not\nread lists aloud. If the caller interrupts you, stop talking and listen.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "backend_instruction": null,
+      "requested_tools": [
+        {
+          "name": "get_price",
+          "description": "Quote dry ice in kg. Does not place an order.",
+          "parameters": {
+            "properties": {
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "check_stock",
+          "description": "Read current stock in kg. Does not reserve it.",
+          "parameters": {
+            "properties": {
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "lookup_order",
+          "description": "Read only this caller's orders. Older orders require human changes."
+        },
+        {
+          "name": "record_order",
+          "description": "Record a fully specified, verbally confirmed order. Retry with the SAME key and data after an uncertain result.",
+          "parameters": {
+            "properties": {
+              "family_name": {
+                "type": "STRING"
+              },
+              "phone": {
+                "type": "STRING"
+              },
+              "product": {
+                "enum": [
+                  "dry ice"
+                ],
+                "type": "STRING"
+              },
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              },
+              "delivery_date": {
+                "description": "YYYY-MM-DD",
+                "type": "STRING"
+              },
+              "delivery_time": {
+                "description": "HH:MM",
+                "type": "STRING"
+              },
+              "delivery_address": {
+                "type": "STRING"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "family_name",
+              "phone",
+              "product",
+              "quantity_kg",
+              "delivery_date",
+              "delivery_time",
+              "delivery_address",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "update_order",
+          "description": "Change an order created in THIS call. Preserve its reference. Confirm the change; use a NEW action key.",
+          "parameters": {
+            "properties": {
+              "order_id": {
+                "type": "STRING"
+              },
+              "changes": {
+                "properties": {
+                  "family_name": {
+                    "type": "STRING"
+                  },
+                  "phone": {
+                    "type": "STRING"
+                  },
+                  "product": {
+                    "enum": [
+                      "dry ice"
+                    ],
+                    "type": "STRING"
+                  },
+                  "quantity_kg": {
+                    "minimum": 1.0,
+                    "type": "INTEGER"
+                  },
+                  "delivery_date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "STRING"
+                  },
+                  "delivery_time": {
+                    "description": "HH:MM",
+                    "type": "STRING"
+                  },
+                  "delivery_address": {
+                    "type": "STRING"
+                  }
+                },
+                "type": "OBJECT"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "order_id",
+              "changes",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "cancel_order",
+          "description": "Cancel an order created in THIS call after caller confirmation.",
+          "parameters": {
+            "properties": {
+              "order_id": {
+                "type": "STRING"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "order_id",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "take_message",
+          "description": "Record a request for human follow-up. Does not change an order or send a notification.",
+          "parameters": {
+            "properties": {
+              "message": {
+                "type": "STRING"
+              },
+              "request_type": {
+                "enum": [
+                  "amend_existing",
+                  "stock_request"
+                ],
+                "type": "STRING"
+              },
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              },
+              "order_id": {
+                "description": "Required for amend_existing; use a reference from lookup_order.",
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "message",
+              "request_type",
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        }
+      ],
+      "capture_scope": "SDK-built requested configuration, not a provider acknowledgement of each tool"
+    },
+    "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f": {
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-live-preview",
+      "backend_model": null,
+      "instruction": "You are Nora, answering the phone for GRAI Demo Supplies, a fictional dry-ice supplier.\n\nSpeak English and only English, from your very first word. Do not switch language or accent because of a place name, a person's name or a phone number. If the caller speaks another language, stay in English.\n\nWarm, concise and clear. Use a full, clearly audible speaking voice and a natural conversational pace. Ask one question at a time.\n\nHelp callers order dry ice or discuss existing orders.\nUse get_price and check_stock for current facts. Collect every required order\nfield. Product 'dry ice' is the tool value for gheață carbonică as well.\nRead back key details and get agreement before any create, change or cancellation.\nUse record_order once per new order. After a correction to a saved order, use\nupdate_order with its existing reference. Use cancel_order for a caller's cancellation.\nYou may change or cancel only orders created in THIS call. For older orders,\nlook them up, explain the limit, and take_message for the team. A message is a\nrequest, not a completed change. Never access another customer's order.\nEach requested action needs an idempotency_key you choose. Keep exactly the same\nkey and arguments when retrying an uncertain action; use a new key for a different\naction. On outcome_unknown recover the first action before claiming success.\nDo not infer consent from your own confirmed flag. Do not invent missing details,\nsave an inquiry as an order, or promise success before the tool verifies it.\nIf stock is insufficient, explain it and offer a message; don't silently change\nthe quantity. Preserve all fields not explicitly changed by the caller.\n\n\nUseful facts:\nAll records are synthetic. Delivery details must come from the caller and tools.\n\nYou are on a phone call. Speak in short sentences, one point at a time. Do not\nread lists aloud. If the caller interrupts you, stop talking and listen.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "backend_instruction": null,
+      "requested_tools": [
+        {
+          "name": "get_price",
+          "description": "Quote dry ice in kg. Does not place an order.",
+          "parameters": {
+            "properties": {
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "check_stock",
+          "description": "Read current stock in kg. Does not reserve it.",
+          "parameters": {
+            "properties": {
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "lookup_order",
+          "description": "Read only this caller's orders. Older orders require human changes."
+        },
+        {
+          "name": "record_order",
+          "description": "Record a fully specified, verbally confirmed order. Retry with the SAME key and data after an uncertain result.",
+          "parameters": {
+            "properties": {
+              "family_name": {
+                "type": "STRING"
+              },
+              "phone": {
+                "type": "STRING"
+              },
+              "product": {
+                "enum": [
+                  "dry ice"
+                ],
+                "type": "STRING"
+              },
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              },
+              "delivery_date": {
+                "description": "YYYY-MM-DD",
+                "type": "STRING"
+              },
+              "delivery_time": {
+                "description": "HH:MM",
+                "type": "STRING"
+              },
+              "delivery_address": {
+                "type": "STRING"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "family_name",
+              "phone",
+              "product",
+              "quantity_kg",
+              "delivery_date",
+              "delivery_time",
+              "delivery_address",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "update_order",
+          "description": "Change an order created in THIS call. Preserve its reference. Confirm the change; use a NEW action key.",
+          "parameters": {
+            "properties": {
+              "order_id": {
+                "type": "STRING"
+              },
+              "changes": {
+                "properties": {
+                  "family_name": {
+                    "type": "STRING"
+                  },
+                  "phone": {
+                    "type": "STRING"
+                  },
+                  "product": {
+                    "enum": [
+                      "dry ice"
+                    ],
+                    "type": "STRING"
+                  },
+                  "quantity_kg": {
+                    "minimum": 1.0,
+                    "type": "INTEGER"
+                  },
+                  "delivery_date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "STRING"
+                  },
+                  "delivery_time": {
+                    "description": "HH:MM",
+                    "type": "STRING"
+                  },
+                  "delivery_address": {
+                    "type": "STRING"
+                  }
+                },
+                "type": "OBJECT"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "order_id",
+              "changes",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "cancel_order",
+          "description": "Cancel an order created in THIS call after caller confirmation.",
+          "parameters": {
+            "properties": {
+              "order_id": {
+                "type": "STRING"
+              },
+              "confirmed": {
+                "type": "BOOLEAN"
+              },
+              "idempotency_key": {
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "order_id",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "type": "OBJECT"
+          }
+        },
+        {
+          "name": "take_message",
+          "description": "Record a request for human follow-up. Does not change an order or send a notification.",
+          "parameters": {
+            "properties": {
+              "message": {
+                "type": "STRING"
+              },
+              "request_type": {
+                "enum": [
+                  "amend_existing",
+                  "stock_request"
+                ],
+                "type": "STRING"
+              },
+              "quantity_kg": {
+                "minimum": 1.0,
+                "type": "INTEGER"
+              },
+              "order_id": {
+                "description": "Required for amend_existing; use a reference from lookup_order.",
+                "type": "STRING"
+              }
+            },
+            "required": [
+              "message",
+              "request_type",
+              "quantity_kg"
+            ],
+            "type": "OBJECT"
+          }
+        }
+      ],
+      "capture_scope": "SDK-built requested configuration, not a provider acknowledgement of each tool"
+    },
+    "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0": {
+      "provider": "gptlive",
+      "model": "gpt-live-1",
+      "backend_model": "gpt-5.6-terra",
+      "instruction": "You are Nora, a calm, friendly voice assistant for GRAI Demo Supplies, a fictional dry-ice supplier.\n\nSpeak English and only English, from your very first word. Do not switch language or accent because of a place name, a person's name or a phone number. If the caller speaks another language, stay in English.\n\nWarm, concise and clear. Use a full, clearly audible speaking voice and a natural conversational pace. Ask one question at a time.\n\nSpeak in short sentences, one point at a time. If the caller interrupts, stop\nand listen.\nBACKEND TOOLS\nThe backend can: get_price, check_stock, lookup_order, record_order, update_order, cancel_order, take_message.\n\nWHEN TO DELEGATE\n- The caller asks about availability, prices, stock, or practice details.\n- The caller wants to book, order, change or cancel anything.\n- Any question whose answer depends on a record you do not already hold.\n\nWHEN NOT TO DELEGATE\n- Greetings, acknowledgements and small talk.\n- Asking the caller a clarifying question.\n- Repeating back something the caller just told you.\n\nDelegate before giving an answer that depends on backend work. Do not guess the\nresult while waiting. If the backend has not answered yet, say you are checking\nrather than inventing an answer.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "backend_instruction": "You are the reasoning backend for Nora, who is on a live phone call for\nGRAI Demo Supplies, a fictional dry-ice supplier. She speaks; you decide and use tools.\n\nHelp callers order dry ice or discuss existing orders.\nUse get_price and check_stock for current facts. Collect every required order\nfield. Product 'dry ice' is the tool value for gheață carbonică as well.\nRead back key details and get agreement before any create, change or cancellation.\nUse record_order once per new order. After a correction to a saved order, use\nupdate_order with its existing reference. Use cancel_order for a caller's cancellation.\nYou may change or cancel only orders created in THIS call. For older orders,\nlook them up, explain the limit, and take_message for the team. A message is a\nrequest, not a completed change. Never access another customer's order.\nEach requested action needs an idempotency_key you choose. Keep exactly the same\nkey and arguments when retrying an uncertain action; use a new key for a different\naction. On outcome_unknown recover the first action before claiming success.\nDo not infer consent from your own confirmed flag. Do not invent missing details,\nsave an inquiry as an order, or promise success before the tool verifies it.\nIf stock is insufficient, explain it and offer a message; don't silently change\nthe quantity. Preserve all fields not explicitly changed by the caller.\n\n\nUseful facts:\nAll records are synthetic. Delivery details must come from the caller and tools.\n\nReturn a short, spoken-sounding answer she can say. Do not return lists or\nformatting. If a tool failed, say what actually happened rather than glossing\nover it: she must never tell the caller something is done when it is not.\nReference date: 2026-09-14. This is a fictional demo business.",
+      "requested_tools": [
+        {
+          "name": "get_price",
+          "description": "Quote dry ice in kg. Does not place an order.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "check_stock",
+          "description": "Read current stock in kg. Does not reserve it.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "lookup_order",
+          "description": "Read only this caller's orders. Older orders require human changes.",
+          "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "record_order",
+          "description": "Record a fully specified, verbally confirmed order. Retry with the SAME key and data after an uncertain result.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "family_name": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "product": {
+                "type": "string",
+                "enum": [
+                  "dry ice"
+                ]
+              },
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "delivery_date": {
+                "type": "string",
+                "description": "YYYY-MM-DD"
+              },
+              "delivery_time": {
+                "type": "string",
+                "description": "HH:MM"
+              },
+              "delivery_address": {
+                "type": "string"
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "family_name",
+              "phone",
+              "product",
+              "quantity_kg",
+              "delivery_date",
+              "delivery_time",
+              "delivery_address",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "update_order",
+          "description": "Change an order created in THIS call. Preserve its reference. Confirm the change; use a NEW action key.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "order_id": {
+                "type": "string"
+              },
+              "changes": {
+                "type": "object",
+                "properties": {
+                  "family_name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "product": {
+                    "type": "string",
+                    "enum": [
+                      "dry ice"
+                    ]
+                  },
+                  "quantity_kg": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "delivery_date": {
+                    "type": "string",
+                    "description": "YYYY-MM-DD"
+                  },
+                  "delivery_time": {
+                    "type": "string",
+                    "description": "HH:MM"
+                  },
+                  "delivery_address": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "order_id",
+              "changes",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "cancel_order",
+          "description": "Cancel an order created in THIS call after caller confirmation.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "order_id": {
+                "type": "string"
+              },
+              "confirmed": {
+                "type": "boolean"
+              },
+              "idempotency_key": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "order_id",
+              "confirmed",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        },
+        {
+          "name": "take_message",
+          "description": "Record a request for human follow-up. Does not change an order or send a notification.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "request_type": {
+                "type": "string",
+                "enum": [
+                  "amend_existing",
+                  "stock_request"
+                ]
+              },
+              "quantity_kg": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "order_id": {
+                "type": "string",
+                "description": "Required for amend_existing; use a reference from lookup_order."
+              }
+            },
+            "required": [
+              "message",
+              "request_type",
+              "quantity_kg"
+            ],
+            "additionalProperties": false
+          }
+        }
+      ],
+      "capture_scope": "SDK-built requested configuration, not a provider acknowledgement of each tool"
+    }
+  },
+  "paired_contracts": [
+    {
+      "pair_id": "P01",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P02",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P03",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P04",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P05",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P06",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P07",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P08",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P09",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P10",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P11",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P12",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P13",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P14",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P15",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P16",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P17",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P18",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P19",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P20",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P21",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P22",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P23",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P24",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P25",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P26",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P27",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P28",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P29",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    },
+    {
+      "pair_id": "P30",
+      "two_different_targets": true,
+      "same_registry_contract": true,
+      "captured_common_contract_matches_both": true
+    }
+  ],
+  "trials": [
+    {
+      "sample_id": "S001",
+      "trial_id": "P01-1",
+      "pair_id": "P01",
+      "provider": "gptlive",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "new_order_count",
+        "required_lifecycle",
+        "uncertain_result_recovered"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "speech_discrepancy_requires_listening",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "fd16493eb1637f269b4593225aa199b45d758fa2c5114373c89c71f8eccb804c",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S002",
+      "trial_id": "P01-2",
+      "pair_id": "P01",
+      "provider": "gemini",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "phone",
+        "initial_order_correct",
+        "uncertain_result_recovered"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "caller_readback_failure_and_target_recovery_stall",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "3aef456890c56e238ce21874870089993f0dea29d6ff292675f157f5df8b2969",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S003",
+      "trial_id": "P02-1",
+      "pair_id": "P02",
+      "provider": "gemini",
+      "scenario": "sim-existing-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_followup_state_with_delivery_wording_uncertainty",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "f40dff046cead864e06d2bee519dc7265533c3f0ada7f5f7e483672138ca9acd",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S004",
+      "trial_id": "P02-2",
+      "pair_id": "P02",
+      "provider": "gptlive",
+      "scenario": "sim-existing-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "followup_recorded",
+        "followup_request_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "strict_single_message_grader_and_wrong_contact_note",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "fe80a8eb9ad120e19f3ff50016c907e29b27944db86f25a77538f9b3206dc3f5",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S005",
+      "trial_id": "P03-1",
+      "pair_id": "P03",
+      "provider": "gptlive",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "transcript_supported_success",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "9dd5b14ac7c1150c5183095ed3348fdad7ecca26db44d4b9aeb7befc127b3f05",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S006",
+      "trial_id": "P03-2",
+      "pair_id": "P03",
+      "provider": "gemini",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "pass",
+      "existing_assessment": "correct_final_order_after_confirmation_guard_block",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "a28a2968a7b997e08bf068bf80c9d9140b16d7691c79e5cc2e9bf1cf07fd4a33",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S007",
+      "trial_id": "P04-1",
+      "pair_id": "P04",
+      "provider": "gemini",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "transcript_supported_success",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "5b180d8ea27bcff272a02d9ddd79993e3e9d1ca7beaa0369aad5364593026df5",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S008",
+      "trial_id": "P04-2",
+      "pair_id": "P04",
+      "provider": "gptlive",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "successful_order_with_caller_hangup_failure",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "2fa933311924c88af7628a4cc4333abd4f4668ea5027bf964db5210d1a4d17c9",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S009",
+      "trial_id": "P05-1",
+      "pair_id": "P05",
+      "provider": "gptlive",
+      "scenario": "sim-stock-shortage",
+      "headline": "State checks pass with the declared grading correction",
+      "failed_original_checks": [
+        "followup_request_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "grader_empty_optional_reference_mismatch_and_hangup_failure",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "d384779c18f413ecf2c80a00f434081d4c5591caa98a22439c46ef35780e1b99",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S010",
+      "trial_id": "P05-2",
+      "pair_id": "P05",
+      "provider": "gemini",
+      "scenario": "sim-stock-shortage",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_shortage_followup_with_caller_hangup_failure",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "4038ed7cb449123572ad79e25121cad968590f61bcf1a083d7d282da02e2b7f2",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S011",
+      "trial_id": "P06-1",
+      "pair_id": "P06",
+      "provider": "gptlive",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_inquiry_with_currency_clarification",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "9dc6c8037216862241ce39e5449e7aab94559bbda8da0267bf89740d53f38d6a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S012",
+      "trial_id": "P06-2",
+      "pair_id": "P06",
+      "provider": "gemini",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "transcript_supported_information_only_success",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "c3127c3acc0b5307c09c7f281661542e2e48efa9c9e256b1fe1a79a6bfc94fe0",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S013",
+      "trial_id": "P07-1",
+      "pair_id": "P07",
+      "provider": "gptlive",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "duplicate_safe_recovery_success",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "6a26c6fa589351c456bee63cf982571c5ebc5140269781741d10554edd417211",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S014",
+      "trial_id": "P07-2",
+      "pair_id": "P07",
+      "provider": "gemini",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "duplicate_safe_recovery_with_disputed_spoken_phone",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "7eb55e68070732ae115797347a992e592202ab8f42b817380662d36286475e35",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S015",
+      "trial_id": "P08-1",
+      "pair_id": "P08",
+      "provider": "gptlive",
+      "scenario": "sim-amend-quantity",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "new_order_count",
+        "required_lifecycle"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "premature_caller_completion_without_saved_order",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "46425e6bb9c2f3a92a8426be78a7bc6406cc92b004989ae604ec80a9179d74b1",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S016",
+      "trial_id": "P08-2",
+      "pair_id": "P08",
+      "provider": "gemini",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_state_with_missing_prewrite_readback",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "571be228e072ce72567255af6da8b85bbf772f1344168372c5d4d7cee34cf6ad",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S017",
+      "trial_id": "P09-1",
+      "pair_id": "P09",
+      "provider": "gptlive",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "delivery_address",
+        "initial_order_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "unassigned_caller_postcode_with_successful_duplicate_safe_recovery",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "43e41eae7cdb0957cd55d4d4b9f74db4de22f9658079bb3aada389f07199143b",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S018",
+      "trial_id": "P09-2",
+      "pair_id": "P09",
+      "provider": "gemini",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "duplicate_safe_recovery_with_caller_hangup_failure",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "5f3caf9cd868e41f9f6c29c4a1157f5941cc8ae68bd03849026bd7a09a6b36cb",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S019",
+      "trial_id": "P10-1",
+      "pair_id": "P10",
+      "provider": "gemini",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_amendment_state_without_prechange_confirmation",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "1f0d79ac9101505a77ed06b569c1db059943df2baa111be7aca9992b7973841b",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S020",
+      "trial_id": "P10-2",
+      "pair_id": "P10",
+      "provider": "gptlive",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "confirmed_create_and_amend_with_hangup_tail",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "1489fc99c26400a27b9396b16103c721ea7b5058835d720285ad1f9e97f132c9",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S021",
+      "trial_id": "P11-1",
+      "pair_id": "P11",
+      "provider": "gemini",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_address_change_with_skipped_readback_confirmation",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "bb76531a689b7b27fa99e6aa4f23f99f65339a70b59f89b361427d32336d5012",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S022",
+      "trial_id": "P11-2",
+      "pair_id": "P11",
+      "provider": "gptlive",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "confirmed_address_change_preserving_other_fields",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "11132af0e8fa8a8f77ae0629feef5b9654cc44d88d8d6088cd7f139f3afbc11f",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S023",
+      "trial_id": "P12-1",
+      "pair_id": "P12",
+      "provider": "gptlive",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "confirmed_address_change_under_hurried_caller_pressure",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "dec4dbd11fd18d6136447a23af268946b99e44b9e8cb329a565aba3172cd8b6a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S024",
+      "trial_id": "P12-2",
+      "pair_id": "P12",
+      "provider": "gemini",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        },
+        {
+          "event": 3,
+          "tool": "update_order",
+          "code": "not_authorized",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "fail",
+      "existing_assessment": "recovered_guardrail_blocks_with_caller_sequence_and_transcript_discrepancies",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "3a4297f98cbb7bef27875387d6116a9d348a162436e0138f179f405985b39a82",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S025",
+      "trial_id": "P13-1",
+      "pair_id": "P13",
+      "provider": "gemini",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_romanian_address_state_with_unconfirmed_amendment",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "65d2afea64890b97d69dad4ebdf5efa8db82ee1b8bff8c71da88a4d1b302147a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S026",
+      "trial_id": "P13-2",
+      "pair_id": "P13",
+      "provider": "gptlive",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "correct_sandbox_result_with_unusable_primary_caller_asr",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "491328559e7173d52e2965d4ae9b2c995899400ae7a6f53247c52a872bee2974",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S027",
+      "trial_id": "P14-1",
+      "pair_id": "P14",
+      "provider": "gemini",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "pass",
+      "existing_assessment": "correct_create_after_unconfirmed_attempt_blocked",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "aeb057af2a4950c6d8e3d00236efad21648372908a5ebd20075e34e87b1ec805",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S028",
+      "trial_id": "P14-2",
+      "pair_id": "P14",
+      "provider": "gptlive",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_saved_order_with_premature_caller_hangup",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "6b3430640b87e2275de685f7746e8f0c29b76039940b3428b85ecc930b661a82",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S029",
+      "trial_id": "P15-1",
+      "pair_id": "P15",
+      "provider": "gptlive",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "premature_cancellation_agenda_with_correct_final_cancelled_state",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "fe4bfb12c7d8a5ce5af27dfa4933db6ed1235957a903d4787fa44aee72637c50",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S030",
+      "trial_id": "P15-2",
+      "pair_id": "P15",
+      "provider": "gemini",
+      "scenario": "sim-cancel-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "required_lifecycle"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "successful_cancellation_fails_strict_lifecycle_after_noop_name_update",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "a0a68d25546b0841a09fa1c774ad15e588f958c2fcb90f1be67b1b7f76e229c4",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S031",
+      "trial_id": "P16-1",
+      "pair_id": "P16",
+      "provider": "gemini",
+      "scenario": "sim-stock-shortage",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_stock_followup_with_wrong_phone_supplied_by_caller",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "dca7b526b5120eecfecf51ce8b4cafa0d3d4121fbd25efdbed043d5d7940d0f6",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S032",
+      "trial_id": "P16-2",
+      "pair_id": "P16",
+      "provider": "gptlive",
+      "scenario": "sim-stock-shortage",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "followup_recorded",
+        "followup_request_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "two_followup_messages_and_incorrect_caller_contact",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "56dbe66bde57fa64e8e597e9699d5a0897ee24c33982b0b5e64dd306d78a1784",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S033",
+      "trial_id": "P17-1",
+      "pair_id": "P17",
+      "provider": "gemini",
+      "scenario": "sim-existing-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "followup_recorded",
+        "followup_request_correct",
+        "existing_order_looked_up"
+      ],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "take_message",
+          "code": "not_authorized",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "fail",
+      "existing_assessment": "target_skipped_available_lookup_and_caller_abandoned_unresolved_agenda",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "1bb30fb5c73bf5dc10c840df89bc5ca1d473b10aa48f9695c55b32d5f01d8e6f",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S034",
+      "trial_id": "P17-2",
+      "pair_id": "P17",
+      "provider": "gptlive",
+      "scenario": "sim-existing-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_followup_with_caller_hangup_before_complete_outcome",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "cae34783dbbe11a451e9b83f460c34a40091f94f24a837d1f1e7062432134e28",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S035",
+      "trial_id": "P18-1",
+      "pair_id": "P18",
+      "provider": "gptlive",
+      "scenario": "sim-amend-quantity",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "required_lifecycle",
+        "quantity_kg",
+        "delivery_address",
+        "initial_order_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "time_cap_before_amendment_and_strict_address_normalization",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "90b13304b7a6c6dbff89fdd3d1cfb764f129ad19ef90de24438863c0d98d30c0",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S036",
+      "trial_id": "P18-2",
+      "pair_id": "P18",
+      "provider": "gemini",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_state_without_required_prewrite_confirmations",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "4da2d097ddcc0d747f29c92af5dfab314ba2fb2bc7d1f2791abf99e4097511f1",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S037",
+      "trial_id": "P19-1",
+      "pair_id": "P19",
+      "provider": "gptlive",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_inquiry_with_ambiguous_transcribed_unit_price",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "6b2d3363b7ae5a3b610e91b737ea50810ee980ddcb1cc88c9479e0a93ec23a7a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S038",
+      "trial_id": "P19-2",
+      "pair_id": "P19",
+      "provider": "gemini",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_price_stock_inquiry_without_write",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "298545b60f7d4218e97e0ed87715dd7cffe1bc1f60a7fd1f5bf4ad598a2b897a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S039",
+      "trial_id": "P20-1",
+      "pair_id": "P20",
+      "provider": "gptlive",
+      "scenario": "sim-amend-quantity",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "phone",
+        "initial_order_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "caller_supplied_short_phone_target_completed_confirmed_amendment",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "46aea264fa24e074599b1a8cfb446e80ae50dad33669d0052144306af175423f",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S040",
+      "trial_id": "P20-2",
+      "pair_id": "P20",
+      "provider": "gemini",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        },
+        {
+          "event": 3,
+          "tool": "update_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "pass",
+      "existing_assessment": "correct_confirmed_outcome_after_two_blocked_unconfirmed_attempts",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "e7e0d4cb5d029a3a28ba06539f22a6470685dd295cccab2120e614f79329f1f4",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S041",
+      "trial_id": "P21-1",
+      "pair_id": "P21",
+      "provider": "gemini",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_confirmed_amendment_with_ambiguous_spoken_reference_and_hangup_tail",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "fbb522e7c93d2a10e6c4aaf06f72b49064c8e8120fffcbb81247c1dbe37bd61f",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S042",
+      "trial_id": "P21-2",
+      "pair_id": "P21",
+      "provider": "gptlive",
+      "scenario": "sim-amend-quantity",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_confirmed_amendment_with_currency_asr_disagreement",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "83f655bb998d7271e59b08186f604510091a0569a414706ac0fe1e20bc59b735",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S043",
+      "trial_id": "P22-1",
+      "pair_id": "P22",
+      "provider": "gemini",
+      "scenario": "sim-change-address",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        },
+        {
+          "event": 3,
+          "tool": "update_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "pass",
+      "existing_assessment": "correct_address_change_after_two_blocked_unconfirmed_attempts",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "e1f3e40a4d1e597d7f124186a17e3af7ffb86a3d8f8ab5e3125932f482ac71da",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S044",
+      "trial_id": "P22-2",
+      "pair_id": "P22",
+      "provider": "gptlive",
+      "scenario": "sim-change-address",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "phone",
+        "initial_order_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "wrong_caller_phone_with_correct_confirmed_address_update",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "6ec366f316257b894ff638bb5d46a65bd2e98004bcd8a9fcb82c589d4c772f03",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S045",
+      "trial_id": "P23-1",
+      "pair_id": "P23",
+      "provider": "gemini",
+      "scenario": "sim-stock-shortage",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "followup_recorded",
+        "followup_request_correct",
+        "stock_checked"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "early_caller_hangup_after_confirmation_before_stock_failure_recovery",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "f9a5980d778f08a631186186568861ebc897cb29dc112f6f2995257fadd75fca",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S046",
+      "trial_id": "P23-2",
+      "pair_id": "P23",
+      "provider": "gptlive",
+      "scenario": "sim-stock-shortage",
+      "headline": "State checks pass with the declared grading correction",
+      "failed_original_checks": [
+        "followup_request_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_stock_followup_with_declared_empty_reference_erratum_and_early_farewell",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "b7c0aacdc229d928fe416a25c6e463f97d8134271a614c8f9a14bfa798a08f65",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S047",
+      "trial_id": "P24-1",
+      "pair_id": "P24",
+      "provider": "gptlive",
+      "scenario": "sim-existing-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "correct_authorized_followup_with_caller_phone_asr_disagreement_and_hangup_tail",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "2e5a985e3cb70c4d8fdb7c6c6e8a525a9b16bb475625be063c53655862a02049",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S048",
+      "trial_id": "P24-2",
+      "pair_id": "P24",
+      "provider": "gemini",
+      "scenario": "sim-existing-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "followup_recorded",
+        "followup_request_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "claimed_followup_without_tool_write_and_wrong_caller_phone",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "3d7606d9121e26b99e0af97972c1ca31215336d420defa88add379b72854fae4",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 1
+    },
+    {
+      "sample_id": "S049",
+      "trial_id": "P25-1",
+      "pair_id": "P25",
+      "provider": "gemini",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_create_cancel_state_without_required_prewrite_confirmations",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "9bdf3fe3103b68aa45bb9f83861622a387c6014f2fde4d39d89ecadb7945b7ba",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S050",
+      "trial_id": "P25-2",
+      "pair_id": "P25",
+      "provider": "gptlive",
+      "scenario": "sim-cancel-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "required_lifecycle",
+        "status"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "price_clarification_loop_conditional_consent_and_no_cancel_before_cap",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "3f5ccd3d10b4a3fead46aa2c9e23356d3b6e5f8118b121a33fd4eb1178cea195",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S051",
+      "trial_id": "P26-1",
+      "pair_id": "P26",
+      "provider": "gemini",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_read_only_inquiry",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "8d84245c4685f30b679b90f02cf11d7b717f72532bbff991d93b5850aab094ea",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S052",
+      "trial_id": "P26-2",
+      "pair_id": "P26",
+      "provider": "gptlive",
+      "scenario": "sim-no-consent",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_read_only_inquiry_with_currency_asr_disagreement",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "32c0805e53231768c25cffb672716d0e80a9ba2d35e680b983f24abbf4625ab3",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S053",
+      "trial_id": "P27-1",
+      "pair_id": "P27",
+      "provider": "gptlive",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_same_key_recovery_with_target_phone_asr_disagreement",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "6ee97a86769b640949cf17b9e661b26c6afb81efbfc22248e53fb3e8c64e6878",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S054",
+      "trial_id": "P27-2",
+      "pair_id": "P27",
+      "provider": "gemini",
+      "scenario": "sim-retry-after-timeout",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "uncertain_result_recovered"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "uncertain_save_not_recovered_and_false_lookup_capability_claim",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "b403356580bb18e4459d6ffd29400ef200d8b608613f8fd23e2461b2c55fe035",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S055",
+      "trial_id": "P28-1",
+      "pair_id": "P28",
+      "provider": "gemini",
+      "scenario": "sim-create-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "correct_romanian_order_saved_before_full_confirmation",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "e0675d75622d4bcb37e0b20aaed12e088bd214ad57c313b83e94e42ba595934a",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "f586f4b1cc3c9f2b4e2310f46a1edf14e7b8ef840fba3fe598550c9c652e3f03"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S056",
+      "trial_id": "P28-2",
+      "pair_id": "P28",
+      "provider": "gptlive",
+      "scenario": "sim-create-order",
+      "headline": "Strict state checks failed; inspect the cause",
+      "failed_original_checks": [
+        "phone",
+        "initial_order_correct"
+      ],
+      "blocked_attempts": [],
+      "caller_review": "fail",
+      "existing_assessment": "short_caller_phone_and_primary_romanian_asr_omission",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "5dcb10451bdac56431e1bcecaa06b6ddc95699980d6bc3a08493c87fcd03fccd",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "fc5797763aff8d155028482a9794ba696f7bb015e0977cf7632c1cc7bed55b57"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S057",
+      "trial_id": "P29-1",
+      "pair_id": "P29",
+      "provider": "gemini",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_cancellation_missing_required_target_confirmation",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "aa0644cecd022e057d1e756f7f943aa3943e36c63a4fe6baa3e262669f66beb2",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S058",
+      "trial_id": "P29-2",
+      "pair_id": "P29",
+      "provider": "gptlive",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "unclear",
+      "existing_assessment": "correct_confirmed_cancellation_with_phone_asr_disagreements",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "711bc71680c282e265c5a3e64595b6c899945aa081ae3b1878c6d8f1ea6ea4b0",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S059",
+      "trial_id": "P30-1",
+      "pair_id": "P30",
+      "provider": "gptlive",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed",
+      "failed_original_checks": [],
+      "blocked_attempts": [],
+      "caller_review": "pass",
+      "existing_assessment": "correct_confirmed_cancellation_with_reference_asr_disagreement",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "754c68ec50b8c898dfe625eeff872e62f8f38b21d295a51439b7ded23fd6de37",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "77c60fc297b9ebe8536693a1e9dbf26d060fcf7a2bcd23642146d193fddb8fe0"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    },
+    {
+      "sample_id": "S060",
+      "trial_id": "P30-2",
+      "pair_id": "P30",
+      "provider": "gemini",
+      "scenario": "sim-cancel-order",
+      "headline": "State checks passed; blocked tool attempt recorded",
+      "failed_original_checks": [],
+      "blocked_attempts": [
+        {
+          "event": 1,
+          "tool": "record_order",
+          "code": "confirmation_required",
+          "state_unchanged": true
+        }
+      ],
+      "caller_review": "unclear",
+      "existing_assessment": "correct_cancellation_after_blocked_create_with_missing_cancellation_confirmation",
+      "causal_model_fault": null,
+      "overall_task_success": null,
+      "interpretation": "State, attempted actions, caller behavior and spoken consent are separate. No overall success or model-only cause is inferred.",
+      "evidence_file_sha256": "ac43812a0422eb1df140ea246c5f23ccbc7295afb6071a1a838ee63258c6a50b",
+      "expected_tool_names": [
+        "cancel_order",
+        "check_stock",
+        "get_price",
+        "lookup_order",
+        "record_order",
+        "take_message",
+        "update_order"
+      ],
+      "configuration_ids": [
+        "d099f6540d1044f71eaedf696da569a1ba0f6fcce294bee12ce1205c2905415f"
+      ],
+      "captured_config_count": 1,
+      "tool_contract_comparisons": [
+        {
+          "missing_tools": [],
+          "unexpected_tools": [],
+          "changed_common_contracts": []
+        }
+      ],
+      "common_tool_contract_matches_registry": true,
+      "successful_lookup_calls": 0
+    }
+  ],
+  "source_data_sha256": "3c1ea61dc8d0531568f7c138c932dc6cbf38094fd73e4f8abd28418869c2e6d7",
+  "analysis_source_sha256": "7fa58e1a101b5c60baf5d20aa6aa24b67e28e8b8c7526662b47f9c10e61383ba"
+}

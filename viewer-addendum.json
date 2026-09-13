@@ -1,0 +1,9 @@
+{
+  "version": "study60-audit-v1",
+  "kind": "viewer_and_diagnostic_addendum",
+  "original_dataset_release": "https://github.com/patrick25076/grai-voice-bench/releases/tag/study60-v1",
+  "original_dataset_hash_manifest_sha256": "de84a9ecc2c64ebe12cacdc4d62c8355ca0ef0e5133d50a4a8e99e9ff29d79d0",
+  "source_data_sha256": "3c1ea61dc8d0531568f7c138c932dc6cbf38094fd73e4f8abd28418869c2e6d7",
+  "original_data_csv_and_60_recordings_unchanged": true,
+  "note": "The hosted hash manifest covers this updated viewer and addendum. The original release retains its original viewer and hashes."
+}
