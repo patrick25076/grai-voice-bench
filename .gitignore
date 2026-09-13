@@ -17,3 +17,7 @@ scorecards/
 *.log
 *.lock.tmp
 .DS_Store
+
+# Keep publishing drafts and outreach planning outside the public package.
+/LAUNCH-DRAFTS.md
+/launch-kit/

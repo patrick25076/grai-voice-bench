@@ -206,5 +206,20 @@ Never publish `.env*`, rollback snapshots, account IDs or personal phone data.
 MIT licensed. This staged package is the release boundary; it excludes the
 rest of the GRAI monorepo and production tenant configurations.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for useful contributions and
-[LAUNCH-DRAFTS.md](LAUNCH-DRAFTS.md) for draft GRAI Labs posts.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for useful contributions.
+
+## Built at GRAI Labs
+
+I'm Patrick, building [GRAI Labs](https://grailabs.ai). I already run a voice agent
+for supply-chain order intake. This project grows out of that work: understanding
+how speech-to-speech agents behave before connecting them to business systems.
+
+If you're building a voice agent, I'd like to hear which workflow is hardest to
+test or debug. Open an issue with a synthetic example or contribute an adapter.
+
+If you run a business that takes orders by phone, or know a team that does,
+[get in touch](https://grailabs.ai/#access). I'm interested in helping scope and
+evaluate integrations, including tool permissions, human handoff and testing
+before rollout. Tell me what happens after a call and which order system you use.
+The benchmark is an experimental evaluation toolkit, not a production safety
+certification.
