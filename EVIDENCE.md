@@ -3,6 +3,12 @@
 The phone runner records evidence; it does not establish a model leaderboard.
 Use the exact worker source version recorded in each call when replaying tools.
 
+For the completed study's setup and failure questions, read [FAILURE-AUDIT.md](FAILURE-AUDIT.md).
+`explain.py` inspects captured native declarations and generates a diagnostic
+addendum anchored to the input data hash. It does not regrade calls or infer a
+model-only cause. Its common-contract comparison explicitly excludes the
+documented `additionalProperties`/`propertyOrdering` transport differences.
+
 ```sh
 uv run python offline_analysis.py runs/study60
 uv run python usage_audit.py runs/study60/P01-1/agent-evidence.json

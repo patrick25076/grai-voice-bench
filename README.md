@@ -11,6 +11,13 @@ calls, with 30 calls per answering system. [Listen and inspect the evidence](htt
 Every call includes original audio, sandbox actions and before/after state,
 deterministic grades and provisional transcript-assisted assessments.
 
+Start with the [failure audit](FAILURE-AUDIT.md) to understand S027's correct order
+after a blocked attempt and S033's skipped, available lookup tool. The viewer now
+includes captured native tool declarations and prompts, plus direct sample links.
+The addendum preserves all original recordings and scores. See the
+[framework direction and existing alternatives](FRAMEWORK-DIRECTION.md) for what
+is implemented and what remains planned, including browser and Telnyx transports.
+
 This remains an experimental phone-testing framework. Personal listening scores,
 human-validated response latency and full invoices are pending. Caller deviations,
 strict grader limitations and one declared scoring correction are visible; raw
