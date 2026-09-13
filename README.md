@@ -5,23 +5,31 @@ caller hears while it works, and what each part costs. This release compares
 `gemini-3.1-flash-live-preview` with `gpt-live-1` plus a declared Responses
 backend. These are system configurations, including their provider runtimes.
 
-**This is an experimental phone-testing framework.** The first pilot contains
-one matched pair, not a leaderboard. Read the [pilot report](PILOT.md) for
-results, exclusions, and unfinished measurements. Real calls require your own
-model, LiveKit, and Twilio accounts.
+**The 60-call study is collected and assessed:** 50 English and 10 Romanian
+calls, with 30 calls per answering system. [Listen and inspect the evidence](https://patrick25076.github.io/grai-voice-bench/),
+[read the results](STUDY-RESULTS.md), or [download the versioned dataset](https://github.com/patrick25076/grai-voice-bench/releases/tag/study60-v1).
+Every call includes original audio, sandbox actions and before/after state,
+deterministic grades and provisional transcript-assisted assessments.
+
+This remains an experimental phone-testing framework. Personal listening scores,
+human-validated response latency and full invoices are pending. Caller deviations,
+strict grader limitations and one declared scoring correction are visible; raw
+state scores are not a model leaderboard. The earlier [two-call pilot](PILOT.md)
+is separate. New calls require your own model, LiveKit and Twilio accounts.
 
 The [60-call study protocol](STUDY-60.md) adds 50 English and 10 Romanian calls,
 native tool-schema checks, recorded provider configuration/usage, a frozen batch
-runner and a local listening page with durable personal ratings. **The study is
-running.** Its assignments and runtime hashes were published before evaluation
-in [v0.4.0](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0).
-This is not yet a completed or human-validated results report.
+runner and a local listening page with durable personal ratings. Its assignments
+and runtime hashes were published before evaluation in
+[v0.4.0](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0).
+The completed evidence release is `study60-v1`; its original and supplemental
+transcripts are machine evidence, with human listening verification still pending.
 
 The new [simulation component](SIMULATIONS.md) adds eight order-lifecycle cases:
 create, amend, change address, cancel, escalate an older order, handle a shortage,
 recover an uncertain save, and avoid ordering without consent. Tools execute in
 fresh in-memory business environments with before/after evidence. These additions
-are tested offline and are now being exercised by the phone study.
+were tested offline and exercised by the completed phone study.
 
 September 13 calibration found and corrected a caller-agenda ambiguity and a
 recovery-grader restriction before evaluation. It also verified native tool
@@ -132,7 +140,8 @@ Each run retains carrier call IDs, routing configuration, recordings and
 available carrier prices. The worker emits `BENCH_RESULT` JSON with the
 declared models, tools, outcomes, usage events, errors and SDK event timings.
 Missing usage or prices remain null. Count both caller and target models,
-GPT-Live's Responses backend, both telephony legs, recordings, SIP and hosting.
+GPT-Live's Responses backend, all carrier legs (outbound SIP, PSTN and the
+inbound target trunk), recordings, SIP/media and hosting.
 Do not report the caller's cost as the target's cost.
 
 Download the worker scorecards into `runs/worker-scorecards/`, then run

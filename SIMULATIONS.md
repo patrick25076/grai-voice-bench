@@ -5,10 +5,11 @@ correctly as a conversation develops. It combines a caller agenda, a fresh
 fictional environment, real tool execution against that environment, and checks
 on the resulting state and action history.
 
-The eight lifecycle cases are new, separate from the six v0.1 cases. They have
-passed offline fixture and SDK-wrapper checks. They have **not yet produced a
-new Gemini-versus-GPT phone result**. The September 12 pilot remains one matched
-pair on the earlier `loading-dock` case.
+The eight lifecycle cases were exercised in the [60-call telephone study](STUDY-RESULTS.md):
+50 English and 10 Romanian calls, with original recordings, sandbox state and
+provisional assessments. They are separate from the six v0.1 cases and the
+earlier one-pair `loading-dock` pilot. Personal ratings and human audio verification
+remain pending; the offline examples below are scripted traces, not model scores.
 
 ## Inspect it without spending money
 
@@ -78,8 +79,9 @@ or sends messages needs a separate isolation boundary before it belongs here.
 ## Faults, consent and evidence
 
 The service can inject a failure before a write or a lost response after a write.
-The latter returns `outcome_unknown` even though state changed. Recovery must
-reuse the action's key. This tests a real distributed-systems failure pattern
+The latter returns `outcome_unknown` even though state changed. Recovery can
+verify the saved order through a subsequent lookup, or retry the action with
+the same key and arguments. This tests a real distributed-systems failure pattern
 without creating real orders. The lost response is simulated at the tool contract;
 it is not a measured network timeout.
 

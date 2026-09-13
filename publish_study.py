@@ -98,7 +98,9 @@ def measurement_tables(groups):
         "",
         "These are component estimates and posted carrier charges, not a complete invoice. "
         "Target and simulator costs are separate. Unknown modality and unbilled services are "
-        "not zero. The approved EUR budget is a spending limit, not an exchange-rate conversion.",
+        "not zero. Compare costs with outcomes and duration: early failures and silent hangup "
+        "tails affect these totals. This is not cost per verified successful task. The approved "
+        "EUR budget is a spending limit, not an exchange-rate conversion.",
         "ASR includes original Whisper plus supplemental gpt-transcribe. Supplemental estimates "
         "use reported API duration when available; raw envelopes retain the original "
         "input-duration estimate.",
@@ -123,7 +125,9 @@ def measurement_tables(groups):
         "segment merge were used. Overlapping responses are excluded from gaps; acknowledgments "
         "can count as responses. These are not validated semantic response times. Active-frame "
         "dBFS is not LUFS or a measure of whispering/speaking speed. Silent hangup tails remain "
-        "in recording duration and costs. Original recordings are unchanged.",
+        "in recording duration and costs. A fixed energy threshold can miss quieter speech "
+        "and shift detected boundaries differently across voices. Original recordings are "
+        "unchanged.",
         "",
         "| Language | Target | Gap observations | Median call gap (ms) | Median target active dBFS "
         "| Median recording duration (s) |",
@@ -453,6 +457,10 @@ def export(manifest, root, output, draft=False):
         else "completed_exploratory_evidence_with_listening_pending",
         "evaluation_software": "https://github.com/patrick25076/grai-voice-bench/tree/v0.4.0",
         "analysis_software": "https://github.com/patrick25076/grai-voice-bench/tree/study60-v1",
+        "exact_analysis_source_archive": (
+            "https://github.com/patrick25076/grai-voice-bench/releases/download/"
+            "study60-v1/grai-voice-bench-study60-v1-source.zip"
+        ),
         "analysis_source_sha256": {
             name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
             for name in (
@@ -497,22 +505,40 @@ def export(manifest, root, output, draft=False):
         "limitations": [
             "Configured systems: Gemini 3.1 Flash Live / Puck versus GPT-Live-1 / marin plus "
             "GPT-5.6-Terra. Not equal-compute isolated base models.",
+            "Calibration checked routing, caller agendas, native tool exposure and working "
+            "examples before freezing. It does not establish that either prompt is optimal "
+            "or that a failure is independent of prompt and adapter design.",
             "60 selected calls, 50 English and 10 Romanian; eight workflows and three seeded "
             "personas, not 60 independent scenario families. No universal ranking or significance "
             "claim.",
             "30 matched pairs share caller provider, agenda, tools and fixture, but generated "
             "speech varies. Show caller deviations and acoustic uncertainty; raw state pass is "
             "not clean causal attribution.",
+            "Seeds reproduce fixtures and persona selection, not generated speech. Recorded "
+            "model IDs and source hashes do not freeze provider-side model updates; this is "
+            "evidence of the observed configurations and dates.",
+            "Caller behavior is affected by the target's responses. The subset with passing "
+            "caller reviews is a post-hoc diagnostic subset, not an unbiased causal comparison.",
             "Deterministic state and guardrail checks are separate from transcript-assisted "
             "assessment, human audio verification and Patrick's personal preference.",
+            "The Codex assistant's transcript-assisted assessments were made with model labels "
+            "visible. They are provisional and are not an independent or blinded review panel.",
+            "The state grade includes exact lifecycle and message-count rules. An unnecessary "
+            "no-op update can fail its required sequence even when the final cancellation is "
+            "correct. Address normalization can also reject semantically equivalent wording "
+            "such as adding the Romanian word for number. Read each failed check and the "
+            "accompanying assessment; these rules were not relaxed after seeing results.",
             "Whisper and provider transcripts can hallucinate, omit speech or disagree. Original "
             "dual-channel audio is retained at unchanged level and speed.",
             "After major Whisper omissions/repetition were observed, all 60 recordings received "
             "a supplemental gpt-transcribe pass on both channels without an expected-text prompt. "
             "This post-start analysis addition preserves the original ASR and grades. Agreement "
             "between transcribers is supporting machine evidence, not human audio verification.",
+            "Whisper and gpt-transcribe are both OpenAI transcription systems; their errors may "
+            "be correlated. They were not given the expected order facts or benchmark answers.",
             "RMS gaps are exploratory acoustic diagnostics, not validated response latency. "
-            "Receipt timestamps are not audible boundaries. Duration is not speaking speed.",
+            "The fixed energy threshold can miss quieter speech. Receipt timestamps are not "
+            "audible boundaries. Duration is not speaking speed.",
             "Known USD cost components are dated estimates/posted carrier charges. Missing token "
             "modality, final invoices, media/SIP, hosting, storage, taxes and FX remain "
             "unresolved; EUR reservations are not spend.",
@@ -545,7 +571,14 @@ def export(manifest, root, output, draft=False):
         "",
         f"Status: {report['status']}. {report['recordings']}/{report['scheduled']} recordings.",
         "",
+        "[Listen and inspect the calls](https://patrick25076.github.io/grai-voice-bench/) "
+        "or [download the versioned dataset](https://github.com/patrick25076/"
+        "grai-voice-bench/releases/tag/study60-v1).",
+        "",
         "Evaluation software: [v0.4.0](https://github.com/patrick25076/grai-voice-bench/tree/v0.4.0).",
+        f"Analysis software: [study60-v1]({report['analysis_software']}); "
+        f"[exact analysis source bytes]({report['exact_analysis_source_archive']}). "
+        "Per-file analysis hashes are recorded in data.json.",
         f"Exact source bytes: [frozen archive]({report['exact_frozen_source_archive']}) "
         f"(SHA-256 `{report['exact_frozen_source_archive_sha256']}`).",
         f"Observed UTC period: {report['observed_period_utc']['first_attempt']} to "
@@ -555,6 +588,7 @@ def export(manifest, root, output, draft=False):
         "## Recorded sandbox outcomes",
         "",
         "These are raw deterministic outcomes across all attempts, including caller problems. "
+        "They include strict action-sequence/cardinality rules, not only final record contents. "
         "They are not human-validated success rates.",
         "",
         "| Language | Target | Recordings | State pass | State fail | Policy pass | Policy fail "

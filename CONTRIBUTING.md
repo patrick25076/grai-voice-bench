@@ -20,3 +20,18 @@ Use synthetic data in issues and PRs. Raw recordings, transcripts, account
 identifiers and environment files belong outside the public repository unless
 a separate anonymized evidence release has been reviewed. The included MIT
 license covers this repository, not provider services or dependencies.
+
+## Priorities from the telephone study
+
+- Validate the simulated caller as carefully as the answering agent: preserve
+  contact details, wait for actual outcome announcements, and distinguish a
+  spoken hangup instruction from a telephone-control tool call.
+- Improve equivalent-field grading with explicit regression cases, while keeping
+  original published grades and declaring every changed scoring rule.
+- Annotate audible caller-end, first response and substantive-response boundaries.
+  Quieter voices and acknowledgments can mislead a fixed energy threshold.
+- Reconcile captured usage with provider invoices and document missing components.
+  Adapter-counter agreement alone does not establish billing accuracy.
+
+Changes to prompts, tools or call-ending behavior belong in a new experiment.
+Do not rewrite the frozen study evidence or silently replace unsuccessful calls.

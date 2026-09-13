@@ -1,7 +1,8 @@
 # The 60-call phone study
 
-**Status: evaluation running from the setup frozen in v0.4.0.** This is not a
-completed leaderboard. The earlier [pilot](PILOT.md)
+**Status: all 60 evaluation calls are recorded and provisionally assessed.**
+Read the [results and limitations](STUDY-RESULTS.md). Personal ratings,
+human-validated latency and complete invoices remain pending. The earlier [pilot](PILOT.md)
 is separate. These instructions supersede the larger example matrix in
 [STUDY.md](STUDY.md) for this release. The frozen manifest was attached to the
 [v0.4.0 release](https://github.com/patrick25076/grai-voice-bench/releases/tag/v0.4.0)
@@ -31,8 +32,8 @@ recognizes `goodbye` / `la revedere` in the caller's own output transcript and
 starts that same grace period, because a GPT-Live development caller completed
 its agenda but did not invoke the telephone-control tool. Otherwise the 180-second
 limit applies. A hangup request is not proof of success; early or incorrect
-hangups count as caller-fidelity issues and remain visible. This avoids charging
-all completed conversations for an artificial silent three-minute tail.
+hangups count as caller-fidelity issues and remain visible. This reduced some avoidable
+silent tails. The frozen fallback misses bye/bye-bye, as documented below.
 
 Calibration on September 13 exposed an ambiguous caller prompt: it assumed an
 existing order and introduced an unassigned second address. Suite v2 now states
